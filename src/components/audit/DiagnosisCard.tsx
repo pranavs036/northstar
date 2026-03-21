@@ -11,7 +11,15 @@ interface DiagnosisProps {
   reason: string;
   fix: string;
   competitorData: Record<string, unknown> | null;
+  sentimentLabel?: "POSITIVE" | "NEUTRAL" | "NEGATIVE";
+  citationCount?: number;
 }
+
+const sentimentConfig = {
+  POSITIVE: { label: "Positive", className: "text-emerald-400 bg-emerald-400/10" },
+  NEUTRAL: { label: "Neutral", className: "text-zinc-400 bg-zinc-400/10" },
+  NEGATIVE: { label: "Negative", className: "text-red-400 bg-red-400/10" },
+};
 
 const severityConfig = {
   CRITICAL: {
@@ -59,6 +67,8 @@ export function DiagnosisCard({
   reason,
   fix,
   competitorData,
+  sentimentLabel,
+  citationCount,
 }: DiagnosisProps) {
   const [expanded, setExpanded] = useState(false);
   const config = severityConfig[severity];
@@ -80,14 +90,24 @@ export function DiagnosisCard({
             <Icon className={`w-4 h-4 ${config.color}`} />
           </div>
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-3 mb-1">
+            <div className="flex items-center gap-3 mb-1 flex-wrap">
               <span className={`px-2 py-0.5 rounded text-xs font-medium ${config.color} ${config.bg}`}>
                 {config.label}
               </span>
+              {sentimentLabel && (
+                <span className={`px-2 py-0.5 rounded text-xs font-medium ${sentimentConfig[sentimentLabel].className}`}>
+                  {sentimentConfig[sentimentLabel].label}
+                </span>
+              )}
               <span className="text-xs text-text-tertiary font-mono">{skuCode}</span>
               <span className="text-xs text-text-tertiary px-2 py-0.5 bg-bg-tertiary rounded">
                 {engineLabels[engine] || engine}
               </span>
+              {citationCount !== undefined && (
+                <span className="text-xs text-text-tertiary">
+                  {citationCount} {citationCount === 1 ? "citation" : "citations"}
+                </span>
+              )}
             </div>
             <p className="font-medium text-text-primary truncate">{skuName}</p>
             <p className="text-sm text-text-secondary mt-1 line-clamp-2">{reason}</p>

@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { Zap, Search, AlertTriangle, CheckCircle2, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { DiagnosisCard } from "@/components/audit/DiagnosisCard";
+import { EngineComparisonChart } from "@/components/charts/EngineComparisonChart";
 import type { AuditRecord, DiagnosisRecord, ScanResultRecord, SkuRecord } from "@/types/pocketbase";
 
 export default async function AuditResultsPage({
@@ -61,6 +62,20 @@ export default async function AuditResultsPage({
       : (audit.agentScore ?? 0) >= 50
         ? "text-warning"
         : "text-error";
+
+  const engineChartData = (["CHATGPT", "PERPLEXITY", "GOOGLE"] as const).map((engine) => {
+    const engineLabel =
+      engine === "CHATGPT" ? "ChatGPT" : engine === "PERPLEXITY" ? "Perplexity" : "Google AI";
+    const engineScans = scanResults.filter(
+      (r) => r.engine === engine && skus.some((s) => s.id === r.sku)
+    );
+    const visible = engineScans.filter((r) => r.brandVisible).length;
+    const total = engineScans.length;
+    return {
+      engine: engineLabel,
+      visibilityRate: total > 0 ? Math.round((visible / total) * 100) : 0,
+    };
+  });
 
   return (
     <div className="space-y-8">
@@ -130,6 +145,9 @@ export default async function AuditResultsPage({
           <p className="text-3xl font-bold text-text-primary">{skus.length}</p>
         </div>
       </div>
+
+      {/* Engine Comparison Chart */}
+      <EngineComparisonChart data={engineChartData} />
 
       {/* Diagnoses */}
       <div>
