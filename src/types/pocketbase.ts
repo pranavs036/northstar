@@ -39,6 +39,12 @@ export interface ScanResultRecord extends RecordModel {
   brandVisible: boolean;
   competitorDomain: string;
   rawResponse: string;
+  sentimentLabel?: "POSITIVE" | "NEUTRAL" | "NEGATIVE";
+  sentimentScore?: number;
+  sentimentReasoning?: string;
+  citations?: string; // JSON string of Citation[]
+  citationCount?: number;
+  brandCited?: boolean;
 }
 
 export interface DiagnosisRecord extends RecordModel {
