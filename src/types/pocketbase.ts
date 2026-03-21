@@ -7,6 +7,18 @@ export interface UserRecord extends RecordModel {
   domain: string;
   plan: "FREE" | "AUDIT" | "MAINTENANCE";
   verified: boolean;
+  role?: "owner" | "admin" | "editor" | "viewer";
+}
+
+export interface TeamMemberRecord extends RecordModel {
+  id: string;
+  owner: string; // user ID of brand owner
+  member: string; // user ID of team member
+  role: "owner" | "admin" | "editor" | "viewer";
+  inviteToken?: string;
+  inviteEmail: string;
+  inviteAccepted: boolean;
+  created: string;
 }
 
 export interface SkuRecord extends RecordModel {
