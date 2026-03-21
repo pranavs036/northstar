@@ -22,6 +22,8 @@ ${rawResponse.slice(0, 5000)}
 Brand domain: ${brandDomain}
 Competitor domains: ${competitorDomains.join(", ")}
 
+Also determine the brand's mention position in the response (1 = first brand/product mentioned, 2 = second, etc.). If the brand is not mentioned, return 0.
+
 Return this exact JSON structure:
 {
   "citations": [
@@ -32,10 +34,11 @@ Return this exact JSON structure:
       "isBrandCitation": true/false,
       "isCompetitorCitation": true/false
     }
-  ]
+  ],
+  "brandPosition": <number>
 }
 
-If no citations found, return {"citations": []}.`,
+If no citations found, return {"citations": [], "brandPosition": 0}.`,
       },
     ],
   });
@@ -54,8 +57,9 @@ If no citations found, return {"citations": []}.`,
       brandCitations: citations.filter((c: any) => c.isBrandCitation).length,
       competitorCitations: citations.filter((c: any) => c.isCompetitorCitation).length,
       uniqueDomains: [...new Set(citations.map((c: any) => c.domain))] as string[],
+      brandPosition: parsed.brandPosition || 0,
     };
   } catch {
-    return { citations: [], totalCitations: 0, brandCitations: 0, competitorCitations: 0, uniqueDomains: [] };
+    return { citations: [], totalCitations: 0, brandCitations: 0, competitorCitations: 0, uniqueDomains: [], brandPosition: 0 };
   }
 }

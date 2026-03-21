@@ -45,6 +45,7 @@ export interface ScanResultRecord extends RecordModel {
   citations?: string; // JSON string of Citation[]
   citationCount?: number;
   brandCited?: boolean;
+  brandPosition?: number;
 }
 
 export interface DiagnosisRecord extends RecordModel {
