@@ -7,6 +7,8 @@ import { scanGoogle } from "@/lib/scanners/google";
 import { scanGemini } from "@/lib/scanners/gemini";
 import { scanCopilot } from "@/lib/scanners/copilot";
 import { generateDiagnosis } from "@/lib/ai/diagnose";
+import { extractCitations } from "@/lib/ai/citation-extractor";
+import { analyzeSentiment } from "@/lib/ai/sentiment-analyzer";
 import type { SkuRecord, CompetitorRecord } from "@/types/pocketbase";
 
 const POCKETBASE_URL =
@@ -187,6 +189,18 @@ export async function POST(request: NextRequest) {
           try {
             const result = await scanner.fn(scanInput);
 
+            // Enrich result with citations and sentiment
+            send("audit:enriching", {
+              message: `Analyzing citations & sentiment for ${sku.name} on ${result.engine}`,
+              skuName: sku.name,
+              engine: result.engine,
+            });
+
+            const [citationAnalysis, sentimentResult] = await Promise.all([
+              extractCitations(result.rawResponse, brandDomain, competitorDomains),
+              analyzeSentiment(result.rawResponse, brandDomain, sku.name),
+            ]);
+
             // Store scan result in PocketBase
             await pb.collection("scan_results").create({
               sku: sku.id,
@@ -195,6 +209,12 @@ export async function POST(request: NextRequest) {
               brandVisible: result.brandVisible,
               competitorDomain: result.competitorDomain,
               rawResponse: result.rawResponse.slice(0, 10000),
+              sentimentLabel: sentimentResult.label,
+              sentimentScore: sentimentResult.score,
+              sentimentReasoning: sentimentResult.reasoning,
+              citations: JSON.stringify(citationAnalysis.citations),
+              citationCount: citationAnalysis.totalCitations,
+              brandCited: citationAnalysis.brandCitations > 0,
             });
 
             allScanResults.push({
