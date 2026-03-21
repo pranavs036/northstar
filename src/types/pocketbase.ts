@@ -34,7 +34,7 @@ export interface AuditRecord extends RecordModel {
 
 export interface ScanResultRecord extends RecordModel {
   sku: string;
-  engine: "CHATGPT" | "GOOGLE" | "PERPLEXITY" | "BING";
+  engine: "CHATGPT" | "GOOGLE" | "PERPLEXITY" | "BING" | "GEMINI" | "COPILOT";
   query: string;
   brandVisible: boolean;
   competitorDomain: string;
@@ -44,7 +44,7 @@ export interface ScanResultRecord extends RecordModel {
 export interface DiagnosisRecord extends RecordModel {
   audit: string;
   sku: string;
-  engine: "CHATGPT" | "GOOGLE" | "PERPLEXITY" | "BING";
+  engine: "CHATGPT" | "GOOGLE" | "PERPLEXITY" | "BING" | "GEMINI" | "COPILOT";
   severity: "CRITICAL" | "HIGH" | "MEDIUM" | "LOW";
   reason: string;
   fix: string;
