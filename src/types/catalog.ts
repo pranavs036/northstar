@@ -11,7 +11,7 @@ export const CsvRowSchema = z.object({
 export type CsvRow = z.infer<typeof CsvRowSchema>;
 
 export const CatalogUploadSchema = z.object({
-  brandId: z.string().cuid(),
+  brandId: z.string().min(1, "Brand ID is required"),
   rows: z.array(CsvRowSchema).min(1, "At least one product is required"),
 });
 

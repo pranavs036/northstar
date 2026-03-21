@@ -1,4 +1,4 @@
-import type { Severity } from "@prisma/client";
+type Severity = "CRITICAL" | "HIGH" | "MEDIUM" | "LOW";
 
 const SEVERITY_WEIGHTS: Record<Severity, number> = {
   CRITICAL: 25,

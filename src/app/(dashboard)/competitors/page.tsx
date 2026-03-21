@@ -15,10 +15,15 @@ export default async function CompetitorsPage() {
 
   const userId = pb.authStore.record.id;
 
-  const competitors = await pb.collection("competitors").getFullList<CompetitorRecord>({
-    filter: `user="${userId}"`,
-    sort: "-created",
-  });
+  let competitors: CompetitorRecord[] = [];
+  try {
+    competitors = await pb.collection("competitors").getFullList<CompetitorRecord>({
+      filter: `user="${userId}"`,
+      sort: "-created",
+    });
+  } catch (err) {
+    console.error("[competitors] Failed to fetch data:", err);
+  }
 
   return (
     <div className="space-y-8">

@@ -17,13 +17,16 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const pb = await createServerClient();
-
-  if (!pb.authStore.isValid || !pb.authStore.record) {
+  let userEmail = "User";
+  try {
+    const pb = await createServerClient();
+    if (!pb.authStore.isValid || !pb.authStore.record) {
+      redirect("/login");
+    }
+    userEmail = pb.authStore.record.email || "User";
+  } catch {
     redirect("/login");
   }
-
-  const userEmail = pb.authStore.record.email || "User";
 
   return (
     <div className="flex h-screen bg-bg-primary text-text-primary">

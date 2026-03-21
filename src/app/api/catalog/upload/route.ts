@@ -1,47 +1,54 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/db/prisma";
+import PocketBase from "pocketbase";
 import { CatalogUploadSchema } from "@/types/catalog";
 import { ZodError } from "zod";
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-
-    // Validate request body
     const validated = CatalogUploadSchema.parse(body);
 
-    // Verify brand exists
-    const brand = await prisma.brand.findUnique({
-      where: { id: validated.brandId },
-    });
+    const pbUrl = process.env.NEXT_PUBLIC_POCKETBASE_URL || "http://127.0.0.1:8090";
+    const pb = new PocketBase(pbUrl);
 
-    if (!brand) {
-      return NextResponse.json(
-        { message: "Brand not found" },
-        { status: 404 }
-      );
+    // Load auth from cookie
+    const pbCookie = request.cookies.get("pb_auth");
+    if (pbCookie) {
+      pb.authStore.loadFromCookie(`pb_auth=${pbCookie.value}`);
     }
 
-    // Prepare SKU data for bulk insert
-    const skuData = validated.rows.map((row) => ({
-      brandId: validated.brandId,
-      skuCode: row.sku,
-      name: row.product_name,
-      category: row.category || null,
-      url: row.url || null,
-      description: row.description || null,
-    }));
+    if (!pb.authStore.isValid) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
 
-    // Use createMany with skipDuplicates to handle duplicate SKU codes
-    const result = await prisma.sku.createMany({
-      data: skuData,
-      skipDuplicates: true,
-    });
+    // Verify user exists (brandId = userId in PocketBase)
+    try {
+      await pb.collection("users").getOne(validated.brandId);
+    } catch {
+      return NextResponse.json({ message: "Brand not found" }, { status: 404 });
+    }
+
+    // Create SKUs individually (PocketBase has no createMany)
+    let created = 0;
+    const results = await Promise.allSettled(
+      validated.rows.map((row) =>
+        pb.collection("skus").create({
+          user: validated.brandId,
+          skuCode: row.sku,
+          name: row.product_name,
+          category: row.category || "",
+          url: row.url || "",
+          description: row.description || "",
+        })
+      )
+    );
+
+    created = results.filter((r) => r.status === "fulfilled").length;
 
     return NextResponse.json(
       {
         message: "Catalog uploaded successfully",
-        created: result.count,
+        created,
         total: validated.rows.length,
       },
       { status: 200 }
@@ -49,16 +56,10 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     if (error instanceof ZodError) {
       const messages = error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; ");
-      return NextResponse.json(
-        { message: `Validation error: ${messages}` },
-        { status: 400 }
-      );
+      return NextResponse.json({ message: `Validation error: ${messages}` }, { status: 400 });
     }
 
     console.error("[catalog/upload]", error);
-    return NextResponse.json(
-      { message: "Failed to upload catalog" },
-      { status: 500 }
-    );
+    return NextResponse.json({ message: "Failed to upload catalog" }, { status: 500 });
   }
 }

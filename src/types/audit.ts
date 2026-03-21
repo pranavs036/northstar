@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const StartAuditSchema = z.object({
-  brandId: z.string().cuid(),
+  brandId: z.string().min(1),
 });
 
 export type StartAuditInput = z.infer<typeof StartAuditSchema>;
@@ -28,4 +28,28 @@ export interface DiagnosisResult {
   reason: string;
   fix: string;
   competitorData: Record<string, unknown> | null;
+}
+
+// SSE event types for real-time audit progress
+export type AuditEventType =
+  | "audit:started"
+  | "audit:query-gen"
+  | "audit:scanning"
+  | "audit:scan-result"
+  | "audit:diagnosing"
+  | "audit:diagnosis-result"
+  | "audit:scoring"
+  | "audit:complete"
+  | "audit:error";
+
+export interface AuditEvent {
+  type: AuditEventType;
+  data: {
+    auditId: string;
+    message: string;
+    progress?: number; // 0-100
+    skuName?: string;
+    engine?: string;
+    severity?: string;
+  };
 }

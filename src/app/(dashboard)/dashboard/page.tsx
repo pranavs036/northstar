@@ -22,10 +22,16 @@ export default async function DashboardPage() {
   const userId = user.id;
 
   // Fetch data in parallel
-  const [skus, audits] = await Promise.all([
-    pb.collection("skus").getFullList<SkuRecord>({ filter: `user="${userId}"` }),
-    pb.collection("audits").getFullList<AuditRecord>({ filter: `user="${userId}"`, sort: "-created" }),
-  ]);
+  let skus: SkuRecord[] = [];
+  let audits: AuditRecord[] = [];
+  try {
+    [skus, audits] = await Promise.all([
+      pb.collection("skus").getFullList<SkuRecord>({ filter: `user="${userId}"` }),
+      pb.collection("audits").getFullList<AuditRecord>({ filter: `user="${userId}"`, sort: "-created" }),
+    ]);
+  } catch (err) {
+    console.error("[dashboard] Failed to fetch data:", err);
+  }
 
   // Fetch scan results and diagnoses for all SKUs
   const skuIds = skus.map((s) => s.id);

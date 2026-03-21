@@ -29,7 +29,7 @@ const navItems = [
   },
   {
     label: "Audits",
-    href: "/audits",
+    href: "/audit",
     icon: FileSearch,
   },
   {

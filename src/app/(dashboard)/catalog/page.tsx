@@ -15,10 +15,15 @@ export default async function CatalogPage() {
 
   const userId = pb.authStore.record.id;
 
-  const skus = await pb.collection("skus").getFullList<SkuRecord>({
-    filter: `user="${userId}"`,
-    sort: "-created",
-  });
+  let skus: SkuRecord[] = [];
+  try {
+    skus = await pb.collection("skus").getFullList<SkuRecord>({
+      filter: `user="${userId}"`,
+      sort: "-created",
+    });
+  } catch (err) {
+    console.error("[catalog] Failed to fetch data:", err);
+  }
 
   // Fetch scan results and diagnoses for all SKUs
   const skuIds = skus.map((s) => s.id);
