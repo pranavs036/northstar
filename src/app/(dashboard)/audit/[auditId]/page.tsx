@@ -1,6 +1,6 @@
 import { createServerClient } from "@/lib/pocketbase/server";
 import { redirect } from "next/navigation";
-import { Zap, Search, AlertTriangle, CheckCircle2, ArrowLeft, Download } from "lucide-react";
+import { Zap, Search, AlertTriangle, CheckCircle2, ArrowLeft, Download, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { DiagnosisCard } from "@/components/audit/DiagnosisCard";
 import { EngineComparisonChart } from "@/components/charts/EngineComparisonChart";
@@ -100,14 +100,30 @@ export default async function AuditResultsPage({
               })}
             </p>
           </div>
-          <a
-            href={`/api/reports/${auditId}`}
-            download
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-accent-primary text-white text-sm font-medium hover:bg-accent-primary/90 transition-colors shrink-0 mt-1"
-          >
-            <Download className="w-4 h-4" />
-            Download PDF Report
-          </a>
+          <div className="flex gap-2 shrink-0 mt-1">
+            <a
+              href={`/api/export?type=csv&scope=diagnoses&auditId=${auditId}`}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-border text-text-secondary text-sm font-medium hover:border-accent-primary/50 hover:text-text-primary transition-colors"
+            >
+              <Download className="w-4 h-4" />
+              Export CSV
+            </a>
+            <a
+              href={`/api/export?type=json&scope=diagnoses&auditId=${auditId}`}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-border text-text-secondary text-sm font-medium hover:border-accent-primary/50 hover:text-text-primary transition-colors"
+            >
+              <Download className="w-4 h-4" />
+              Export JSON
+            </a>
+            <a
+              href={`/api/reports/${auditId}`}
+              download
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-accent-primary text-white text-sm font-medium hover:bg-accent-primary/90 transition-colors"
+            >
+              <Download className="w-4 h-4" />
+              Download PDF Report
+            </a>
+          </div>
         </div>
       </div>
 

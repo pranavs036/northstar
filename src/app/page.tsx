@@ -11,6 +11,10 @@ import {
   Upload,
   ScanLine,
   ClipboardList,
+  MessageSquare,
+  BarChart3,
+  Calendar,
+  Download,
 } from "lucide-react";
 
 export default function LandingPage() {
@@ -289,43 +293,55 @@ export default function LandingPage() {
               visibility across your entire catalog.
             </p>
 
-            <div className="grid md:grid-cols-2 gap-5">
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
               {[
                 {
                   Icon: Search,
-                  accent: "indigo",
-                  title: "AI Engine Scanner",
-                  desc: "Automated queries to ChatGPT, Google AI Overviews, Perplexity, and Bing Copilot. We record exactly which SKUs get cited — and which get buried — across every engine.",
-                  tags: ["ChatGPT", "Google AI", "Perplexity", "Bing"],
+                  title: "5-Engine AI Visibility",
+                  desc: "Track your product visibility across ChatGPT, Perplexity, Google AI Overviews, Gemini, and Copilot.",
+                  tags: ["ChatGPT", "Perplexity", "Google AI", "Gemini", "Copilot"],
                   iconCls: "text-indigo-400 bg-indigo-500/10 border-indigo-500/20",
                   tagCls: "text-indigo-300 bg-indigo-500/8 border-indigo-500/20",
                 },
                 {
                   Icon: Target,
-                  accent: "violet",
-                  title: "Competitor Deep-Dive",
-                  desc: "We scrape competitor PDPs and extract every structural advantage they hold: JSON-LD schema types, FAQ markup, review counts, attribute depth, and content length.",
-                  tags: ["JSON-LD", "Schema Markup", "Meta Tags"],
+                  title: "Product Schema Audit",
+                  desc: "Crawl your product pages, analyze structured data completeness, and auto-generate JSON-LD fixes.",
+                  tags: ["JSON-LD", "Schema Markup", "Auto-fix"],
                   iconCls: "text-violet-400 bg-violet-500/10 border-violet-500/20",
                   tagCls: "text-violet-300 bg-violet-500/8 border-violet-500/20",
                 },
                 {
-                  Icon: FileText,
-                  accent: "blue",
-                  title: "SKU-Level Diagnosis",
-                  desc: "Not vague advice — specific gaps. \"Competitor X ranks above you because they have FAQ schema and 47 reviews cited. You have neither.\" Then: the exact fix, per engine.",
-                  tags: ["Critical", "High", "Medium Priority"],
+                  Icon: MessageSquare,
+                  title: "Citation & Sentiment Analysis",
+                  desc: "See which sources AI cites, detect citation gaps vs competitors, and track brand sentiment.",
+                  tags: ["Citation Gaps", "Sentiment", "Competitors"],
                   iconCls: "text-blue-400 bg-blue-500/10 border-blue-500/20",
                   tagCls: "text-blue-300 bg-blue-500/8 border-blue-500/20",
                 },
                 {
-                  Icon: TrendingUp,
-                  accent: "emerald",
-                  title: "Agent-Readiness Score",
-                  desc: "A 0–100 score for your catalog's AI-readiness. Track improvement over time. Weekly re-scans flag when previously-fixed SKUs slip back below the threshold.",
-                  tags: ["0–100 Score", "Weekly Scans", "Trend Tracking"],
+                  Icon: BarChart3,
+                  title: "Agentic Diagnosis",
+                  desc: "AI-powered analysis tells you exactly why competitors outrank you and generates specific fixes.",
+                  tags: ["AI Analysis", "Fix Generation", "SKU-Level"],
+                  iconCls: "text-amber-400 bg-amber-500/10 border-amber-500/20",
+                  tagCls: "text-amber-300 bg-amber-500/8 border-amber-500/20",
+                },
+                {
+                  Icon: Download,
+                  title: "PDF Audit Reports",
+                  desc: "Download comprehensive audit reports with executive summaries and priority fix lists.",
+                  tags: ["PDF Export", "Executive Summary", "Fix Lists"],
                   iconCls: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
                   tagCls: "text-emerald-300 bg-emerald-500/8 border-emerald-500/20",
+                },
+                {
+                  Icon: Calendar,
+                  title: "Scheduled Monitoring",
+                  desc: "Set up daily or weekly re-scans with alerts when visibility drops or competitors gain.",
+                  tags: ["Daily Scans", "Weekly Scans", "Drop Alerts"],
+                  iconCls: "text-rose-400 bg-rose-500/10 border-rose-500/20",
+                  tagCls: "text-rose-300 bg-rose-500/8 border-rose-500/20",
                 },
               ].map(({ Icon, title, desc, tags, iconCls, tagCls }) => (
                 <div
@@ -441,27 +457,68 @@ export default function LandingPage() {
               </p>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-6">
-              {/* Audit */}
+            <div className="grid md:grid-cols-3 gap-6">
+              {/* Self-Serve */}
               <div className="p-8 rounded-xl border border-white/[0.08] bg-white/[0.02] flex flex-col">
                 <div className="text-xs font-semibold tracking-widest text-slate-500 uppercase mb-4">
-                  One-time Audit
+                  Self-Serve
                 </div>
                 <div className="mb-1">
                   <span className="text-4xl font-bold text-slate-50 tracking-tight">
-                    $2K – $10K
+                    $199
                   </span>
+                  <span className="text-slate-400 text-sm ml-2">/mo</span>
                 </div>
                 <p className="text-sm text-slate-600 mb-8">
-                  Based on catalog size
+                  Automated scanning &amp; dashboards
                 </p>
                 <ul className="space-y-3.5 mb-10 flex-1">
                   {[
-                    "Full catalog AI visibility scan",
-                    "Competitor deep-dive per SKU",
-                    "SKU-level diagnosis + fix list",
-                    "Agent-Readiness Score",
-                    "PDF audit report",
+                    "Automated scanning",
+                    "Visibility dashboards",
+                    "Basic recommendations",
+                    "CSV/JSON export",
+                    "Email alerts",
+                  ].map((f) => (
+                    <li
+                      key={f}
+                      className="flex items-center gap-3 text-sm text-slate-300"
+                    >
+                      <CheckCircle2 className="w-4 h-4 text-indigo-400 shrink-0" />
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+                <Link
+                  href="/signup"
+                  className="block w-full text-center px-5 py-3 rounded-lg border border-white/[0.1] text-sm font-medium hover:border-indigo-500/35 hover:bg-indigo-500/5 transition-all duration-200 no-underline cursor-pointer"
+                  style={{ color: "rgb(203 213 225)" }}
+                >
+                  Get started
+                </Link>
+              </div>
+
+              {/* Managed Audit */}
+              <div className="p-8 rounded-xl border border-white/[0.08] bg-white/[0.02] flex flex-col">
+                <div className="text-xs font-semibold tracking-widest text-slate-500 uppercase mb-4">
+                  Managed Audit
+                </div>
+                <div className="mb-1">
+                  <span className="text-slate-400 text-sm">From </span>
+                  <span className="text-4xl font-bold text-slate-50 tracking-tight">
+                    $2,000
+                  </span>
+                </div>
+                <p className="text-sm text-slate-600 mb-8">
+                  One-time, based on catalog size
+                </p>
+                <ul className="space-y-3.5 mb-10 flex-1">
+                  {[
+                    "White-glove audit",
+                    "Custom audit report",
+                    "Implementation support",
+                    "Competitor deep-dive",
+                    "Priority fix list",
                   ].map((f) => (
                     <li
                       key={f}
@@ -481,7 +538,7 @@ export default function LandingPage() {
                 </Link>
               </div>
 
-              {/* Maintenance — highlighted */}
+              {/* Agentic — highlighted */}
               <div className="p-8 rounded-xl border border-indigo-500/30 flex flex-col relative overflow-hidden">
                 {/* Subtle gradient fill */}
                 <div
@@ -492,10 +549,10 @@ export default function LandingPage() {
                       "linear-gradient(160deg, rgba(99,102,241,0.07) 0%, rgba(139,92,246,0.04) 50%, transparent 100%)",
                   }}
                 />
-                <div className="relative">
+                <div className="relative flex flex-col flex-1">
                   <div className="flex items-start justify-between mb-4">
                     <div className="text-xs font-semibold tracking-widest text-indigo-400 uppercase">
-                      Monthly Maintenance
+                      Agentic
                     </div>
                     <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-indigo-500/15 text-indigo-300 border border-indigo-500/25">
                       Recommended
@@ -503,22 +560,20 @@ export default function LandingPage() {
                   </div>
                   <div className="mb-1">
                     <span className="text-4xl font-bold text-slate-50 tracking-tight">
-                      30%
+                      $499
                     </span>
-                    <span className="text-slate-400 text-sm ml-2">
-                      of audit / month
-                    </span>
+                    <span className="text-slate-400 text-sm ml-2">/mo</span>
                   </div>
                   <p className="text-sm text-slate-600 mb-8">
-                    After your initial audit
+                    Everything in Self-Serve, plus more
                   </p>
-                  <ul className="space-y-3.5 mb-10">
+                  <ul className="space-y-3.5 mb-10 flex-1">
                     {[
-                      "Weekly re-scans across all SKUs",
-                      "Alerts when fixed SKUs slip back",
-                      "New SKU auto-queue",
-                      "Competitor monitoring",
-                      "Monthly trend report",
+                      "Everything in Self-Serve",
+                      "Automated fixes",
+                      "Continuous monitoring",
+                      "Schema auto-generation",
+                      "Priority support",
                     ].map((f) => (
                       <li
                         key={f}
@@ -538,6 +593,104 @@ export default function LandingPage() {
                   </Link>
                 </div>
               </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── WHY NORTHSTAR ─────────────────────────────────────────────────── */}
+        <section className="py-24 px-6 border-t border-white/[0.05]">
+          <div className="max-w-5xl mx-auto">
+            <div className="text-center mb-16">
+              <p className="text-xs font-semibold tracking-widest text-indigo-400 uppercase mb-4">
+                Why NorthStar
+              </p>
+              <h2 className="text-3xl md:text-4xl font-bold text-slate-50 tracking-tight mb-4">
+                Built for ecommerce. Nothing else comes close.
+              </h2>
+              <p className="text-slate-400 max-w-md mx-auto">
+                Generic AI monitoring tools weren&apos;t built for product catalogs. NorthStar was.
+              </p>
+            </div>
+
+            <div className="rounded-xl border border-white/[0.07] overflow-hidden">
+              {/* Header row */}
+              <div className="grid grid-cols-5 bg-white/[0.03] border-b border-white/[0.07]">
+                <div className="p-5 text-sm font-semibold text-slate-400">Feature</div>
+                <div className="p-5 text-center">
+                  <div className="inline-flex items-center gap-1.5 text-sm font-semibold text-indigo-300">
+                    <Zap className="w-3.5 h-3.5" />
+                    NorthStar
+                  </div>
+                </div>
+                <div className="p-5 text-center text-sm text-slate-500">Profound</div>
+                <div className="p-5 text-center text-sm text-slate-500">Writesonic</div>
+                <div className="p-5 text-center text-sm text-slate-500">Otterly</div>
+              </div>
+
+              {/* Data rows */}
+              {[
+                {
+                  feature: "Engine coverage",
+                  northstar: "5 engines",
+                  profound: "3 engines",
+                  writesonic: "2 engines",
+                  otterly: "3 engines",
+                  highlight: true,
+                },
+                {
+                  feature: "Ecommerce / SKU focus",
+                  northstar: "Native",
+                  profound: "Partial",
+                  writesonic: "No",
+                  otterly: "No",
+                  highlight: true,
+                },
+                {
+                  feature: "Schema audit & auto-fix",
+                  northstar: "Yes",
+                  profound: "No",
+                  writesonic: "No",
+                  otterly: "No",
+                  highlight: true,
+                },
+                {
+                  feature: "Actionable SKU-level fixes",
+                  northstar: "Yes",
+                  profound: "Limited",
+                  writesonic: "No",
+                  otterly: "No",
+                  highlight: true,
+                },
+                {
+                  feature: "Pricing",
+                  northstar: "From $199/mo",
+                  profound: "Enterprise",
+                  writesonic: "From $99/mo",
+                  otterly: "From $49/mo",
+                  highlight: false,
+                },
+              ].map((row, i) => (
+                <div
+                  key={row.feature}
+                  className={`grid grid-cols-5 border-b border-white/[0.05] last:border-0 ${
+                    i % 2 === 0 ? "bg-transparent" : "bg-white/[0.01]"
+                  }`}
+                >
+                  <div className="p-5 text-sm text-slate-400">{row.feature}</div>
+                  <div className="p-5 text-center">
+                    <span
+                      className={`text-sm font-semibold ${
+                        row.highlight ? "text-indigo-300" : "text-slate-200"
+                      }`}
+                    >
+                      {row.northstar}
+                    </span>
+                  </div>
+                  <div className="p-5 text-center text-sm text-slate-600">{row.profound}</div>
+                  <div className="p-5 text-center text-sm text-slate-600">{row.writesonic}</div>
+                  <div className="p-5 text-center text-sm text-slate-600">{row.otterly}</div>
+                </div>
+              ))}
             </div>
           </div>
         </section>
