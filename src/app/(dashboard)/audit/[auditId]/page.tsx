@@ -1,6 +1,6 @@
 import { createServerClient } from "@/lib/pocketbase/server";
 import { redirect } from "next/navigation";
-import { Zap, Search, AlertTriangle, CheckCircle2, ArrowLeft } from "lucide-react";
+import { Zap, Search, AlertTriangle, CheckCircle2, ArrowLeft, Download } from "lucide-react";
 import Link from "next/link";
 import { DiagnosisCard } from "@/components/audit/DiagnosisCard";
 import { EngineComparisonChart } from "@/components/charts/EngineComparisonChart";
@@ -87,16 +87,28 @@ export default async function AuditResultsPage({
           <ArrowLeft className="w-4 h-4" />
           All Audits
         </Link>
-        <h1 className="text-4xl font-bold text-text-primary mb-2">
-          Audit Results
-        </h1>
-        <p className="text-text-tertiary">
-          Completed {new Date(audit.created).toLocaleDateString("en-US", {
-            month: "long",
-            day: "numeric",
-            year: "numeric",
-          })}
-        </p>
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-4xl font-bold text-text-primary mb-2">
+              Audit Results
+            </h1>
+            <p className="text-text-tertiary">
+              Completed {new Date(audit.created).toLocaleDateString("en-US", {
+                month: "long",
+                day: "numeric",
+                year: "numeric",
+              })}
+            </p>
+          </div>
+          <a
+            href={`/api/reports/${auditId}`}
+            download
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-accent-primary text-white text-sm font-medium hover:bg-accent-primary/90 transition-colors shrink-0 mt-1"
+          >
+            <Download className="w-4 h-4" />
+            Download PDF Report
+          </a>
+        </div>
       </div>
 
       {/* Stats row */}
