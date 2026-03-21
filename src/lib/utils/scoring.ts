@@ -24,8 +24,8 @@ export function calculateAgentReadinessScore(
     0
   );
 
-  // Normalize: max possible penalty per SKU is 25 (all CRITICAL across 4 engines)
-  const maxPenalty = totalSkus * 25 * 4;
+  // Normalize: max possible penalty per SKU is 25 (all CRITICAL across 5 engines)
+  const maxPenalty = totalSkus * 25 * 5; // 5 engines now
   const normalizedPenalty = (totalPenalty / maxPenalty) * 100;
 
   return Math.max(0, Math.round(100 - normalizedPenalty));

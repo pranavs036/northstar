@@ -4,6 +4,8 @@ import { generateQueries } from "@/lib/ai/query-gen";
 import { scanChatGPT } from "@/lib/scanners/chatgpt";
 import { scanPerplexity } from "@/lib/scanners/perplexity";
 import { scanGoogle } from "@/lib/scanners/google";
+import { scanGemini } from "@/lib/scanners/gemini";
+import { scanCopilot } from "@/lib/scanners/copilot";
 import { generateDiagnosis } from "@/lib/ai/diagnose";
 import type { SkuRecord, CompetitorRecord } from "@/types/pocketbase";
 
@@ -116,7 +118,7 @@ export async function POST(request: NextRequest) {
         progress: 0,
       });
 
-      const totalSteps = skus.length * 4; // queries + 3 engines per SKU
+      const totalSteps = skus.length * 6; // queries + 5 engines per SKU
       let completedSteps = 0;
 
       const allScanResults: Array<{
@@ -177,6 +179,8 @@ export async function POST(request: NextRequest) {
           { fn: scanChatGPT, name: "ChatGPT" },
           { fn: scanPerplexity, name: "Perplexity" },
           { fn: scanGoogle, name: "Google" },
+          { fn: scanGemini, name: "Gemini" },
+          { fn: scanCopilot, name: "Copilot" },
         ];
 
         for (const scanner of scanners) {
