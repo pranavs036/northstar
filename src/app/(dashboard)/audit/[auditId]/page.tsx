@@ -212,6 +212,9 @@ export default async function AuditResultsPage({
         )}
       </div>
 
+      {/* Missing Prompts */}
+      <MissingPromptsSection scanResults={scanResults} skuIds={new Set(skus.map((s) => s.id))} />
+
       {/* Scan breakdown */}
       <div>
         <h2 className="text-2xl font-bold text-text-primary mb-4">
@@ -271,6 +274,105 @@ export default async function AuditResultsPage({
             );
           })}
         </div>
+      </div>
+    </div>
+  );
+}
+
+function MissingPromptsSection({
+  scanResults,
+  skuIds,
+}: {
+  scanResults: ScanResultRecord[];
+  skuIds: Set<string>;
+}) {
+  // Find scan results where our brand was NOT visible but a competitor was cited,
+  // filtered to only scans for this user's SKUs
+  const missedResults = scanResults.filter(
+    (r) => !r.brandVisible && r.competitorDomain && r.competitorDomain !== "" && skuIds.has(r.sku)
+  );
+
+  // Group by query text → count of appearances
+  const queryMap = new Map<string, { count: number; competitors: Set<string> }>();
+  for (const r of missedResults) {
+    if (!r.query) continue;
+    const existing = queryMap.get(r.query);
+    if (existing) {
+      existing.count += 1;
+      existing.competitors.add(r.competitorDomain);
+    } else {
+      queryMap.set(r.query, { count: 1, competitors: new Set([r.competitorDomain]) });
+    }
+  }
+
+  // Sort by count descending, take top 20
+  const missingPrompts = Array.from(queryMap.entries())
+    .sort((a, b) => b[1].count - a[1].count)
+    .slice(0, 20);
+
+  if (missingPrompts.length === 0) return null;
+
+  return (
+    <div>
+      <div className="flex items-center gap-3 mb-4">
+        <EyeOff className="w-6 h-6 text-warning" />
+        <h2 className="text-2xl font-bold text-text-primary">
+          Missing Prompts ({missingPrompts.length})
+        </h2>
+      </div>
+      <p className="text-text-tertiary text-sm mb-4">
+        These are queries where competitors were cited but your brand was not visible.
+        Consider adding them to your prompt library and optimizing for these searches.
+      </p>
+      <div className="bg-bg-secondary border border-border rounded-lg overflow-hidden">
+        <div className="grid grid-cols-[1fr_auto_auto] gap-0">
+          <div className="px-4 py-3 bg-bg-tertiary/50 border-b border-border text-xs font-semibold text-text-tertiary uppercase tracking-wider">
+            Query
+          </div>
+          <div className="px-4 py-3 bg-bg-tertiary/50 border-b border-border text-xs font-semibold text-text-tertiary uppercase tracking-wider text-right">
+            Misses
+          </div>
+          <div className="px-4 py-3 bg-bg-tertiary/50 border-b border-border text-xs font-semibold text-text-tertiary uppercase tracking-wider">
+            Competitors Cited
+          </div>
+        </div>
+        <div className="divide-y divide-border">
+          {missingPrompts.map(([query, data]) => (
+            <div
+              key={query}
+              className="grid grid-cols-[1fr_auto_auto] gap-0 hover:bg-bg-tertiary/30 transition-colors"
+            >
+              <div className="px-4 py-3">
+                <p className="text-sm text-text-primary">{query}</p>
+              </div>
+              <div className="px-4 py-3 text-right">
+                <span className="inline-block px-2 py-0.5 bg-warning/10 text-warning border border-warning/20 rounded text-xs font-medium">
+                  {data.count}
+                </span>
+              </div>
+              <div className="px-4 py-3">
+                <div className="flex flex-wrap gap-1">
+                  {Array.from(data.competitors).map((domain) => (
+                    <span
+                      key={domain}
+                      className="inline-block px-2 py-0.5 bg-bg-tertiary border border-border rounded text-xs text-text-tertiary"
+                    >
+                      {domain}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="mt-3 flex justify-end">
+        <Link
+          href="/prompts"
+          className="text-sm text-accent-primary hover:text-accent-primary/80 transition-colors"
+        >
+          Manage your prompt library →
+        </Link>
       </div>
     </div>
   );

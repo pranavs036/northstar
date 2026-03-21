@@ -11,6 +11,7 @@ import {
   TrendingUp,
   Link2,
   FileCode,
+  MessageSquare,
 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 
@@ -49,6 +50,11 @@ const navItems = [
     href: "/schema-audit",
     label: "Schema Audit",
     icon: FileCode,
+  },
+  {
+    href: "/prompts",
+    label: "Prompts",
+    icon: MessageSquare,
   },
   {
     label: "Settings",
