@@ -9,6 +9,7 @@ import {
   FileSearch,
   Settings,
   TrendingUp,
+  Link2,
 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 
@@ -37,6 +38,11 @@ const navItems = [
     href: "/trends",
     label: "Trends",
     icon: TrendingUp,
+  },
+  {
+    href: "/citations",
+    label: "Citations",
+    icon: Link2,
   },
   {
     label: "Settings",
