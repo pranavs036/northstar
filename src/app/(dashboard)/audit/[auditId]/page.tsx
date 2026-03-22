@@ -30,16 +30,32 @@ export default async function AuditResultsPage({
     redirect("/audit");
   }
 
-  const [diagnoses, scanResults, skus] = await Promise.all([
-    pb.collection("diagnoses").getFullList<DiagnosisRecord>({
-      filter: `audit="${auditId}"`,
-      sort: "-created",
-    }),
-    pb.collection("scan_results").getFullList<ScanResultRecord>(),
-    pb.collection("skus").getFullList<SkuRecord>({
-      filter: `user="${userId}"`,
-    }),
-  ]);
+  // Fetch SKUs first to build filter for scan_results
+  const skus = await pb.collection("skus").getFullList<SkuRecord>({
+    filter: `user="${userId}"`,
+  });
+
+  const skuIds = skus.map((s) => s.id);
+  const skuFilter = skuIds.length > 0
+    ? skuIds.map((id) => `sku="${id}"`).join(" || ")
+    : 'sku=""';
+
+  let diagnoses: DiagnosisRecord[] = [];
+  let scanResults: ScanResultRecord[] = [];
+
+  try {
+    [diagnoses, scanResults] = await Promise.all([
+      pb.collection("diagnoses").getFullList<DiagnosisRecord>({
+        filter: `audit="${auditId}"`,
+        sort: "-created",
+      }),
+      pb.collection("scan_results").getFullList<ScanResultRecord>({
+        filter: skuFilter,
+      }),
+    ]);
+  } catch (e) {
+    console.error("[audit results] Error fetching data:", e);
+  }
 
   const skuMap = new Map(skus.map((s) => [s.id, s]));
 
