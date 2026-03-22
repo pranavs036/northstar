@@ -19,6 +19,7 @@ export function CatalogUpload({ brandId }: CatalogUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [uploadSuccess, setUploadSuccess] = useState(false);
+  const [uploadCount, setUploadCount] = useState(0);
 
   const handleFile = useCallback((file: File) => {
     if (!file.name.toLowerCase().endsWith(".csv")) {
@@ -102,8 +103,8 @@ export function CatalogUpload({ brandId }: CatalogUploadProps) {
       }
 
       const data = await response.json();
+      setUploadCount(data.created || 0);
       setUploadSuccess(true);
-      setParseResult(null);
 
       setTimeout(() => {
         router.push("/catalog");
@@ -125,7 +126,7 @@ export function CatalogUpload({ brandId }: CatalogUploadProps) {
           Catalog Uploaded Successfully
         </h3>
         <p className="text-text-tertiary mb-4">
-          {parseResult?.valid.length || 0} products imported. Redirecting...
+          {uploadCount} products imported. Redirecting...
         </p>
       </div>
     );

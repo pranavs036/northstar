@@ -8,18 +8,18 @@ export async function scanCopilot({
   competitorDomains: string[];
 }) {
   const apiKey = process.env.AZURE_OPENAI_API_KEY;
+  const endpoint = process.env.AZURE_OPENAI_ENDPOINT;
 
-  if (!apiKey) {
+  if (!apiKey || !endpoint || apiKey.startsWith("your-")) {
     return {
       engine: "COPILOT" as const,
       query,
       brandVisible: false,
       competitorDomain: "",
-      rawResponse: "[STUB] AZURE_OPENAI_API_KEY not set",
+      rawResponse: "[SKIPPED] Azure OpenAI API key or endpoint not configured.",
     };
   }
 
-  const endpoint = process.env.AZURE_OPENAI_ENDPOINT || "";
   const response = await fetch(
     `${endpoint}/openai/deployments/gpt-4o/chat/completions?api-version=2024-12-01-preview`,
     {

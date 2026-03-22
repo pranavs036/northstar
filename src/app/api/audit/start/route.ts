@@ -189,17 +189,40 @@ export async function POST(request: NextRequest) {
           try {
             const result = await scanner.fn(scanInput);
 
-            // Enrich result with citations and sentiment
-            send("audit:enriching", {
-              message: `Analyzing citations & sentiment for ${sku.name} on ${result.engine}`,
-              skuName: sku.name,
-              engine: result.engine,
-            });
+            // Skip enrichment for stub/skipped responses
+            const isSkipped = result.rawResponse.startsWith("[SKIPPED]") ||
+              result.rawResponse.startsWith("[STUB]") ||
+              result.rawResponse.startsWith("[ERROR]");
 
-            const [citationAnalysis, sentimentResult] = await Promise.all([
-              extractCitations(result.rawResponse, brandDomain, competitorDomains),
-              analyzeSentiment(result.rawResponse, brandDomain, sku.name),
-            ]);
+            let sentimentLabel = "NEUTRAL";
+            let sentimentScore = 0;
+            let sentimentReasoning = "Skipped — no real response";
+            let citationsJson = "[]";
+            let citationCount = 0;
+            let brandCited = false;
+
+            if (!isSkipped && result.rawResponse.length > 50) {
+              send("audit:enriching", {
+                message: `Analyzing citations & sentiment for ${sku.name} on ${result.engine}`,
+                skuName: sku.name,
+                engine: result.engine,
+              });
+
+              try {
+                const [citationAnalysis, sentimentResult] = await Promise.all([
+                  extractCitations(result.rawResponse, brandDomain, competitorDomains),
+                  analyzeSentiment(result.rawResponse, brandDomain, sku.name),
+                ]);
+                sentimentLabel = sentimentResult.label;
+                sentimentScore = sentimentResult.score;
+                sentimentReasoning = sentimentResult.reasoning;
+                citationsJson = JSON.stringify(citationAnalysis.citations);
+                citationCount = citationAnalysis.totalCitations;
+                brandCited = citationAnalysis.brandCitations > 0;
+              } catch (enrichErr) {
+                console.error(`[audit] Enrichment failed for ${sku.name}/${result.engine}:`, enrichErr);
+              }
+            }
 
             // Store scan result in PocketBase
             await pb.collection("scan_results").create({
@@ -209,12 +232,12 @@ export async function POST(request: NextRequest) {
               brandVisible: result.brandVisible,
               competitorDomain: result.competitorDomain,
               rawResponse: result.rawResponse.slice(0, 10000),
-              sentimentLabel: sentimentResult.label,
-              sentimentScore: sentimentResult.score,
-              sentimentReasoning: sentimentResult.reasoning,
-              citations: JSON.stringify(citationAnalysis.citations),
-              citationCount: citationAnalysis.totalCitations,
-              brandCited: citationAnalysis.brandCitations > 0,
+              sentimentLabel,
+              sentimentScore,
+              sentimentReasoning,
+              citations: citationsJson,
+              citationCount,
+              brandCited,
             });
 
             allScanResults.push({
