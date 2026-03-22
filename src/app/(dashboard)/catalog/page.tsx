@@ -1,6 +1,8 @@
 import { createServerClient } from "@/lib/pocketbase/server";
 import { redirect } from "next/navigation";
 import { Upload, Package } from "lucide-react";
+
+export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { SkuTable } from "@/components/dashboard/SkuTable";
 import type { SkuWithStatus } from "@/types/catalog";
@@ -17,14 +19,12 @@ export default async function CatalogPage() {
 
   let skus: SkuRecord[] = [];
   try {
-    console.log("[catalog] Fetching SKUs for userId:", userId, "isValid:", pb.authStore.isValid);
     skus = await pb.collection("skus").getFullList<SkuRecord>({
       filter: `user="${userId}"`,
       sort: "-created",
     });
-    console.log("[catalog] Found", skus.length, "SKUs");
   } catch (err) {
-    console.error("[catalog] Failed to fetch data:", err);
+    console.error("[catalog] Failed to fetch SKUs:", err);
   }
 
   // Fetch scan results and diagnoses for all SKUs

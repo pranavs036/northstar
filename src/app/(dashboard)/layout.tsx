@@ -1,6 +1,9 @@
 import { createServerClient } from "@/lib/pocketbase/server";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
+
+export const dynamic = "force-dynamic";
+export const fetchCache = "force-no-store";
 import { LogOut } from "lucide-react";
 import { Sidebar } from "@/components/dashboard/Sidebar";
 import { cn } from "@/lib/utils/cn";
