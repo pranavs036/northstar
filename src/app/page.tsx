@@ -46,37 +46,6 @@ export default function LandingPage() {
       {/* ─── SECTION 1: HERO ─── */}
       <LandingHero />
 
-      {/* ─── PARTNERSHIPS / SOCIAL PROOF ─── */}
-      <section className="relative bg-[#E5E4E0] py-16 md:py-20 overflow-hidden border-b border-[rgba(111,111,111,0.12)]">
-        <div className="max-w-[1100px] mx-auto px-6 md:px-12">
-          <FadeUp>
-            <p className="text-center text-[13px] tracking-[0.08em] uppercase text-[#1A1A2E]/40 mb-8">
-              Working with leading ecommerce brands
-            </p>
-          </FadeUp>
-          <FadeUp delay={0.15}>
-            <div className="flex items-center justify-center gap-8 md:gap-16 flex-wrap">
-              {[
-                { name: "Tata MiSHOP", subtitle: "tatamishop.com" },
-                { name: "Giveasy.in", subtitle: null },
-                { name: "Peesafe", subtitle: null },
-              ].map((brand) => (
-                <div key={brand.name} className="flex flex-col items-center">
-                  <span className="text-[28px] md:text-[38px] font-bold tracking-[-0.02em] text-[#1A1A2E]/70">
-                    {brand.name}
-                  </span>
-                  {brand.subtitle && (
-                    <span className="text-[11px] tracking-[0.04em] text-[#1A1A2E]/35 mt-0.5">
-                      {brand.subtitle}
-                    </span>
-                  )}
-                </div>
-              ))}
-            </div>
-          </FadeUp>
-        </div>
-      </section>
-
       {/* ─── SECTION 2: THE URGENCY / FOMO (Dark, Full Width) ─── */}
       <section className="relative bg-[#1A1A2E] text-[#E5E4E0] overflow-hidden" id="the-shift">
         <div className="max-w-[1100px] mx-auto px-6 md:px-12 py-24 md:py-36 lg:py-44">

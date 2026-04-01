@@ -259,7 +259,7 @@ export default function LandingHero() {
             Working with early partners including
           </p>
           <div className="flex items-center justify-center gap-8 md:gap-14 flex-wrap">
-            {["Tata MiSHOP", "Giveasy.in", "Peesafe"].map((brand) => (
+            {["Tatami Shop", "Giveasy.in", "Peesafe"].map((brand) => (
               <span
                 key={brand}
                 className="text-[20px] md:text-[26px] font-bold tracking-[-0.02em] text-[#1A1A2E]/60"
