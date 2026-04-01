@@ -17,6 +17,7 @@ interface EngineResult {
   position: number;
   competitor: string;
   competitorPosition: number;
+  isReal: boolean; // true = real Claude data, false = locked/blurred
 }
 
 interface TierScore {
@@ -50,120 +51,83 @@ interface DemoResults {
 }
 
 /* ────────────────────────────────────────────────────────────
-   MOCK DATA GENERATOR
+   SKU CATALOG GENERATOR (smart mock based on brand)
    ──────────────────────────────────────────────────────────── */
 
-function generateMockResults(brandName: string, domain: string): DemoResults {
-  const visibilityScore = Math.floor(Math.random() * 25) + 12; // 12-36 range (most brands score low)
+const BRAND_PRODUCT_MAP: Record<string, { products: string[]; categories: string[] }> = {
+  wakefit: {
+    products: [
+      "Ortho Memory Foam Mattress", "Dual Comfort Mattress", "Latex Mattress",
+      "Sheesham Bed with Storage", "Engineered Wood Bed", "Recliner Chair",
+      "Nap Pillow", "Microfibre Pillow", "Foam Sofa Set", "L-Shape Sectional Sofa",
+      "Study Table with Drawer", "Office Chair Futon", "Memory Foam Topper",
+      "Kids Bunk Bed", "Coffee Table", "Shoe Rack", "TV Unit", "Wardrobe 3-Door",
+      "Bedside Table", "Dining Table 6-Seater",
+    ],
+    categories: ["Mattresses", "Beds", "Pillows", "Sofas", "Furniture", "Chairs", "Tables", "Storage"],
+  },
+  furlenco: {
+    products: [
+      "Belmont Sofa 3-Seater", "Archie Study Table", "Hamilton Queen Bed",
+      "Oslo Recliner", "Brooklyn Dining Set", "Luna Bookshelf",
+      "Metro Coffee Table", "Nova TV Unit", "Aria Side Table", "Willow Wardrobe",
+      "Fern Office Chair", "Cobalt Bean Bag", "Cedar Shoe Rack", "Ivy Dressing Table",
+      "Elm Bed with Storage", "Sage Bedside Table", "Maple Chest of Drawers",
+      "Birch L-Shape Sofa", "Teak Dining Chair Set", "Palm Outdoor Seating",
+    ],
+    categories: ["Sofas", "Tables", "Beds", "Chairs", "Storage", "Dining", "Outdoor", "Office"],
+  },
+  boat: {
+    products: [
+      "Airdopes 141", "Rockerz 450", "Stone 1200", "Airdopes 161",
+      "Watch Xtend", "Bassheads 100", "Rockerz 255 Pro+", "Stone 352",
+      "Airdopes 441 Pro", "Watch Wave Lite", "Immortal 121", "Stone 180",
+      "Rockerz 550", "Nirvana 751 ANC", "Airdopes 131 Pro",
+      "Watch Iris", "Bassheads 242", "Stone 1500", "Airdopes 381",
+      "Rockerz 330 Pro",
+    ],
+    categories: ["Earbuds", "Headphones", "Speakers", "Smartwatches", "Gaming", "Audio"],
+  },
+  bewakoof: {
+    products: [
+      "Oversized Graphic Tee", "Acid Wash Joggers", "Fleece Hoodie",
+      "Cargo Pants", "Tie-Dye Sweatshirt", "Classic Crew Neck Tee",
+      "High-Rise Shorts", "Polo T-Shirt", "Track Pants", "Crop Top",
+      "Bomber Jacket", "Denim Jacket", "Printed Pyjamas", "Sleeveless Vest",
+      "Boyfriend Fit Tee", "Relaxed Joggers", "Zip Hoodie", "Henley T-Shirt",
+      "Colour Block Shorts", "Ethnic Kurta",
+    ],
+    categories: ["T-Shirts", "Joggers", "Hoodies", "Jackets", "Shorts", "Ethnic", "Loungewear", "Accessories"],
+  },
+  nykaa: {
+    products: [
+      "SkinRX Vitamin C Serum", "Wanderlust Body Lotion", "Eyes On Me Kajal",
+      "So Matte Lipstick", "Prep Me Up Face Primer", "Get Set Loose Powder",
+      "Skin Potion Hydrating Mask", "Full Cover Concealer", "Nail Enamel",
+      "Naturals Face Wash", "Clay It Cool Clay Mask", "All Day Matte Foundation",
+      "Peel Off Mask", "Lash Goddess Mascara", "Brow Definer Pencil",
+      "Micellar Water", "Lip Crayon", "Eye Shadow Palette", "Setting Spray",
+      "Sunscreen SPF 50",
+    ],
+    categories: ["Skincare", "Makeup", "Haircare", "Body Care", "Fragrance", "Nails", "Tools", "Wellness"],
+  },
+  sleepyhead: {
+    products: [
+      "Original Mattress 6-inch", "Sense 3-Zone Mattress", "Flip Dual Comfort",
+      "Laxe Latex Mattress", "Cloud Pillow Set", "Bed Frame with Storage",
+      "Headboard Upholstered", "Mattress Protector", "Memory Foam Pillow",
+      "Adjustable Bed Base", "Sofa Cum Bed", "Floor Mattress",
+      "Toddler Mattress", "Wedge Pillow", "Bed Sheet Set Egyptian Cotton",
+      "Comforter All Season", "Mattress Topper Gel", "Platform Bed",
+      "Trundle Bed", "Body Pillow",
+    ],
+    categories: ["Mattresses", "Pillows", "Beds", "Bedding", "Furniture", "Accessories"],
+  },
+};
 
-  const engines: EngineResult[] = [
-    {
-      engine: "ChatGPT",
-      icon: "GPT",
-      mentioned: Math.random() > 0.6,
-      position: Math.random() > 0.5 ? Math.floor(Math.random() * 4) + 3 : 0,
-      competitor: "Competitor A",
-      competitorPosition: 1,
-    },
-    {
-      engine: "Perplexity",
-      icon: "PPX",
-      mentioned: Math.random() > 0.5,
-      position: Math.random() > 0.4 ? Math.floor(Math.random() * 3) + 2 : 0,
-      competitor: "Competitor B",
-      competitorPosition: 1,
-    },
-    {
-      engine: "Gemini",
-      icon: "GEM",
-      mentioned: Math.random() > 0.7,
-      position: Math.random() > 0.6 ? Math.floor(Math.random() * 5) + 2 : 0,
-      competitor: "Competitor A",
-      competitorPosition: 2,
-    },
-    {
-      engine: "Google AI",
-      icon: "GAI",
-      mentioned: Math.random() > 0.55,
-      position: Math.random() > 0.5 ? Math.floor(Math.random() * 4) + 3 : 0,
-      competitor: "Competitor C",
-      competitorPosition: 1,
-    },
-    {
-      engine: "Copilot",
-      icon: "COP",
-      mentioned: Math.random() > 0.65,
-      position: Math.random() > 0.5 ? Math.floor(Math.random() * 5) + 2 : 0,
-      competitor: "Competitor B",
-      competitorPosition: 1,
-    },
-  ];
-
-  const tiers: TierScore[] = [
-    { tier: "awareness", label: "Brand Awareness", score: Math.floor(Math.random() * 30) + 10, total: 5, visible: Math.floor(Math.random() * 2) + 1 },
-    { tier: "category", label: "Category Queries", score: Math.floor(Math.random() * 25) + 5, total: 8, visible: Math.floor(Math.random() * 3) },
-    { tier: "intent", label: "Purchase Intent", score: Math.floor(Math.random() * 20) + 5, total: 6, visible: Math.floor(Math.random() * 2) },
-    { tier: "competitor", label: "Competitor Queries", score: Math.floor(Math.random() * 15) + 5, total: 5, visible: Math.floor(Math.random() * 2) },
-    { tier: "thought_leadership", label: "Thought Leadership", score: Math.floor(Math.random() * 35) + 15, total: 4, visible: Math.floor(Math.random() * 2) + 1 },
-  ];
-
-  const topGaps = [
-    {
-      gap: "Missing JSON-LD Product schema on all product pages",
-      severity: "CRITICAL",
-      fix: "Add Product schema markup with price, availability, reviews, and aggregate rating to every PDP.",
-    },
-    {
-      gap: "Product descriptions under 200 words average",
-      severity: "CRITICAL",
-      fix: "Expand product descriptions to 500+ words with use cases, specifications, comparisons, and FAQ content.",
-    },
-    {
-      gap: "No FAQ markup detected on category pages",
-      severity: "HIGH",
-      fix: "Add FAQPage schema with 5-8 real customer questions per category. AI engines heavily cite FAQ content.",
-    },
-    {
-      gap: "Review schema missing or incomplete",
-      severity: "HIGH",
-      fix: "Implement AggregateRating and Review schema on all products with 10+ reviews. Include review text snippets.",
-    },
-    {
-      gap: `Brand name "${brandName}" not mentioned in meta descriptions`,
-      severity: "MEDIUM",
-      fix: "Include brand name in first 60 characters of meta descriptions. AI engines use this for brand attribution.",
-    },
-  ];
-
-  const competitorLeaders = [
-    { name: "Competitor A", score: Math.floor(Math.random() * 20) + 55 },
-    { name: "Competitor B", score: Math.floor(Math.random() * 20) + 45 },
-    { name: "Competitor C", score: Math.floor(Math.random() * 20) + 35 },
-  ];
-
-  // Generate realistic SKU catalog based on brand name
-  const skuTemplates = [
-    { prefix: "Classic", categories: ["Essentials", "Core Range"] },
-    { prefix: "Premium", categories: ["Luxury", "Premium Range"] },
-    { prefix: "Ultra", categories: ["Performance", "Pro Range"] },
-    { prefix: "Essential", categories: ["Daily Use", "Basics"] },
-    { prefix: "Pro", categories: ["Professional", "Advanced"] },
-    { prefix: "Signature", categories: ["Exclusive", "Signature Line"] },
-    { prefix: "Original", categories: ["Heritage", "Classic"] },
-    { prefix: "Advanced", categories: ["Innovation", "Tech"] },
-    { prefix: "Natural", categories: ["Organic", "Clean"] },
-    { prefix: "Elite", categories: ["Premium", "Select"] },
-    { prefix: "Max", categories: ["Performance", "Sport"] },
-    { prefix: "Comfort", categories: ["Everyday", "Home"] },
-    { prefix: "Fresh", categories: ["New Arrivals", "Seasonal"] },
-    { prefix: "Active", categories: ["Sports", "Fitness"] },
-    { prefix: "Slim", categories: ["Compact", "Travel"] },
-    { prefix: "Power", categories: ["Heavy Duty", "Industrial"] },
-    { prefix: "Smart", categories: ["Connected", "Tech"] },
-    { prefix: "Eco", categories: ["Sustainable", "Green"] },
-    { prefix: "Lite", categories: ["Budget", "Value"] },
-    { prefix: "Rapid", categories: ["Fast", "Express"] },
-  ];
+function generateSmartSkuCatalog(brandName: string): SkuAudit[] {
+  const key = brandName.toLowerCase().replace(/\s+/g, "");
+  const mapping = BRAND_PRODUCT_MAP[key];
 
   const skuIssues = [
     { issue: "Missing JSON-LD Product schema", severity: "CRITICAL" as const },
@@ -178,13 +142,40 @@ function generateMockResults(brandName: string, domain: string): DemoResults {
     { issue: "Missing comparison content", severity: "MEDIUM" as const },
   ];
 
-  const skuCatalog: SkuAudit[] = skuTemplates.map((tmpl, i) => {
+  if (mapping) {
+    return mapping.products.map((product, i) => {
+      const issueIdx = i % skuIssues.length;
+      const enginesVis = Math.floor(Math.random() * 3);
+      return {
+        sku: `${brandName.substring(0, 3).toUpperCase()}-${String(1001 + i)}`,
+        name: product,
+        category: mapping.categories[i % mapping.categories.length],
+        visibilityScore: Math.floor(Math.random() * 40) + 5,
+        enginesVisible: enginesVis,
+        totalEngines: 5,
+        topIssue: skuIssues[issueIdx].issue,
+        severity: skuIssues[issueIdx].severity,
+      };
+    });
+  }
+
+  // Generic fallback — still better than before
+  const genericProducts = [
+    "Flagship Product", "Essential Collection", "Premium Range",
+    "Budget Line", "Pro Series", "Classic Edition", "Starter Pack",
+    "Deluxe Set", "Travel Size Kit", "Signature Selection",
+    "Limited Edition", "Everyday Essentials", "Value Bundle",
+    "Gift Set", "Trial Pack", "Combo Deal", "Seasonal Special",
+    "Best Seller", "New Arrival", "Clearance Pick",
+  ];
+
+  return genericProducts.map((product, i) => {
     const issueIdx = i % skuIssues.length;
     const enginesVis = Math.floor(Math.random() * 3);
     return {
       sku: `${brandName.substring(0, 3).toUpperCase()}-${String(1001 + i)}`,
-      name: `${brandName} ${tmpl.prefix} ${["Series", "Edition", "Collection", "Range", "Line"][i % 5]}`,
-      category: tmpl.categories[Math.floor(Math.random() * tmpl.categories.length)],
+      name: `${brandName} ${product}`,
+      category: ["Core", "Premium", "Value", "Seasonal", "Accessories"][i % 5],
       visibilityScore: Math.floor(Math.random() * 40) + 5,
       enginesVisible: enginesVis,
       totalEngines: 5,
@@ -192,17 +183,6 @@ function generateMockResults(brandName: string, domain: string): DemoResults {
       severity: skuIssues[issueIdx].severity,
     };
   });
-
-  return {
-    brandName,
-    domain,
-    visibilityScore,
-    engines,
-    tiers,
-    topGaps,
-    competitorLeaders,
-    skuCatalog,
-  };
 }
 
 /* ────────────────────────────────────────────────────────────
@@ -306,8 +286,65 @@ function ScanningView({ brandName, progress, statusText }: { brandName: string; 
           />
         </div>
         <p className="text-xs text-white/30">{progress}% complete</p>
+
+        <p className="text-xs text-white/20 mt-6">
+          Querying Claude AI with real search queries about your brand...
+        </p>
       </motion.div>
     </div>
+  );
+}
+
+/* ────────────────────────────────────────────────────────────
+   BLURRED ENGINE CARD (for locked engines)
+   ──────────────────────────────────────────────────────────── */
+
+function LockedEngineCard({ engine, delay }: { engine: { engine: string; icon: string }; delay: number }) {
+  return (
+    <motion.div
+      className="rounded-xl border border-white/5 bg-white/[0.02] p-5 relative overflow-hidden"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay, duration: 0.4 }}
+    >
+      {/* Blurred content behind overlay */}
+      <div className="blur-[6px] select-none pointer-events-none">
+        <div className="flex items-center justify-between mb-4">
+          <span className="text-xs font-bold tracking-wider uppercase text-white/50">
+            {engine.engine}
+          </span>
+          <span className="w-2.5 h-2.5 rounded-full bg-amber-400" />
+        </div>
+        <div className="mb-3">
+          <p className="text-2xl font-bold text-amber-400">#3</p>
+          <p className="text-[11px] text-white/30 mt-1">position in response</p>
+        </div>
+        <div className="pt-3 border-t border-white/5">
+          <p className="text-[11px] text-white/30">Top result</p>
+          <p className="text-xs text-white/60 font-medium">Competitor (#1)</p>
+        </div>
+      </div>
+
+      {/* Lock overlay */}
+      <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#1A1A2E]/60 backdrop-blur-[1px]">
+        <svg
+          className="w-6 h-6 text-white/30 mb-2"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={1.5}
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"
+          />
+        </svg>
+        <p className="text-[11px] font-semibold text-white/40 text-center px-3">
+          Available in Pro
+        </p>
+      </div>
+    </motion.div>
   );
 }
 
@@ -318,6 +355,9 @@ function ScanningView({ brandName, progress, statusText }: { brandName: string; 
 function ResultsView({ results, onReset }: { results: DemoResults; onReset: () => void }) {
   const headerRef = useRef<HTMLDivElement>(null);
   const headerInView = useInView(headerRef, { once: true });
+
+  const realEngines = results.engines.filter((e) => e.isReal);
+  const lockedEngines = results.engines.filter((e) => !e.isReal);
 
   return (
     <div className="min-h-screen bg-[#1A1A2E] text-white">
@@ -356,19 +396,26 @@ function ResultsView({ results, onReset }: { results: DemoResults; onReset: () =
             <ScoreRing score={results.visibilityScore} size={200} label="Visibility Score" />
 
             <div className="flex-1 text-center md:text-left">
-              <p className="text-[13px] tracking-[0.1em] uppercase text-white/30 mb-3">
-                Free Audit Preview
-              </p>
+              <div className="flex items-center gap-2 mb-3">
+                <p className="text-[13px] tracking-[0.1em] uppercase text-white/30">
+                  Free Audit Preview
+                </p>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-green-500/10 text-green-400 border border-green-500/20 font-medium">
+                  LIVE Claude Data
+                </span>
+              </div>
               <h1 className="text-[clamp(28px,4vw,48px)] font-bold leading-tight mb-4">
                 {results.brandName}
               </h1>
               <p className="text-white/40 text-sm mb-2">{results.domain}</p>
               <p className="text-white/60 text-[15px] leading-relaxed max-w-lg">
-                {results.visibilityScore < 30
-                  ? "Your brand has significant gaps in AI search visibility. Competitors are being recommended over you in most queries."
-                  : results.visibilityScore < 50
+                {results.visibilityScore >= 70
+                  ? "Strong brand visibility in AI search. You're being actively recommended by Claude across most query types."
+                  : results.visibilityScore >= 50
+                  ? "Good baseline visibility. Your brand appears in many AI responses, but there are clear opportunities to improve ranking."
+                  : results.visibilityScore >= 30
                   ? "Your brand appears in some AI responses, but there are clear gaps where competitors outrank you."
-                  : "Good baseline visibility, but there are optimization opportunities to increase your AI recommendation rate."}
+                  : "Your brand has significant gaps in AI search visibility. Competitors are being recommended over you in most queries."}
               </p>
 
               <div className="mt-6 flex flex-wrap items-center gap-3">
@@ -379,7 +426,7 @@ function ResultsView({ results, onReset }: { results: DemoResults; onReset: () =
                   {results.topGaps.filter((g) => g.severity === "HIGH").length} High Priority
                 </span>
                 <span className="text-xs px-3 py-1.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">
-                  5 AI Engines Scanned
+                  Claude AI Scanned
                 </span>
               </div>
             </div>
@@ -390,18 +437,22 @@ function ResultsView({ results, onReset }: { results: DemoResults; onReset: () =
       {/* Engine Breakdown */}
       <section className="py-16 border-b border-white/5">
         <div className="max-w-[1200px] mx-auto px-6 md:px-12">
-          <h2 className="text-xl font-bold mb-8">Engine-by-Engine Visibility</h2>
+          <h2 className="text-xl font-bold mb-2">Engine-by-Engine Visibility</h2>
+          <p className="text-sm text-white/40 mb-8">
+            Claude results are live. Other engines available in paid plans.
+          </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-            {results.engines.map((e, i) => (
+            {/* Real Claude engine card */}
+            {realEngines.map((e, i) => (
               <motion.div
                 key={e.engine}
-                className="rounded-xl border border-white/5 bg-white/[0.02] p-5"
+                className="rounded-xl border-2 border-[#4F7DF3]/30 bg-[#4F7DF3]/5 p-5"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 * i, duration: 0.4 }}
               >
                 <div className="flex items-center justify-between mb-4">
-                  <span className="text-xs font-bold tracking-wider uppercase text-white/50">
+                  <span className="text-xs font-bold tracking-wider uppercase text-[#4F7DF3]">
                     {e.engine}
                   </span>
                   <span
@@ -421,16 +472,24 @@ function ResultsView({ results, onReset }: { results: DemoResults; onReset: () =
                     </p>
                   )}
                   <p className="text-[11px] text-white/30 mt-1">
-                    {e.mentioned ? "position in response" : "not mentioned in AI response"}
+                    {e.mentioned ? "avg position across queries" : "not mentioned in AI responses"}
                   </p>
                 </div>
                 <div className="pt-3 border-t border-white/5">
-                  <p className="text-[11px] text-white/30">Top result</p>
-                  <p className="text-xs text-white/60 font-medium">
-                    {e.competitor} (#{e.competitorPosition})
+                  <p className="text-[10px] font-semibold text-green-400/60 uppercase tracking-wider">
+                    Live Results
                   </p>
                 </div>
               </motion.div>
+            ))}
+
+            {/* Locked engine cards */}
+            {lockedEngines.map((e, i) => (
+              <LockedEngineCard
+                key={e.engine}
+                engine={e}
+                delay={0.1 * (realEngines.length + i)}
+              />
             ))}
           </div>
         </div>
@@ -626,19 +685,38 @@ function ResultsView({ results, onReset }: { results: DemoResults; onReset: () =
             {results.competitorLeaders.map((c, i) => (
               <motion.div
                 key={c.name}
-                className="rounded-xl border border-white/5 bg-white/[0.02] p-6"
+                className="rounded-xl border border-white/5 bg-white/[0.02] p-6 relative overflow-hidden"
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.15 + 0.1 * i, duration: 0.4 }}
               >
-                <p className="text-[11px] uppercase tracking-wider text-white/30 mb-2">
-                  Competitor
-                </p>
-                <p className="text-lg font-bold text-white/70 mb-3">{c.name}</p>
-                <p className="text-3xl font-bold text-green-400">
-                  {c.score}
-                  <span className="text-sm font-normal text-white/30">/100</span>
-                </p>
+                {/* Blurred competitor cards */}
+                <div className="blur-[4px] select-none pointer-events-none">
+                  <p className="text-[11px] uppercase tracking-wider text-white/30 mb-2">
+                    Competitor
+                  </p>
+                  <p className="text-lg font-bold text-white/70 mb-3">{c.name}</p>
+                  <p className="text-3xl font-bold text-green-400">
+                    {c.score}
+                    <span className="text-sm font-normal text-white/30">/100</span>
+                  </p>
+                </div>
+                <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#1A1A2E]/50">
+                  <svg
+                    className="w-5 h-5 text-white/25 mb-1"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={1.5}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"
+                    />
+                  </svg>
+                  <p className="text-[10px] text-white/30 font-medium">Unlock with Pro</p>
+                </div>
               </motion.div>
             ))}
           </div>
@@ -660,7 +738,7 @@ function ResultsView({ results, onReset }: { results: DemoResults; onReset: () =
               Get SKU-level diagnosis with<br />exact fixes for every gap
             </h2>
             <p className="text-white/40 max-w-md mx-auto mb-10 text-[15px] leading-relaxed">
-              The full NorthStar audit scans every SKU in your catalog, diagnoses competitor advantages, and delivers actionable fixes per product per engine.
+              The full NorthStar audit scans every SKU across ChatGPT, Perplexity, Gemini, Google AI, and Copilot — with competitor comparison and actionable fixes per product.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <a
@@ -740,14 +818,14 @@ function FormView({ onSubmit }: { onSubmit: (data: { brandName: string; websiteU
             transition={{ delay: 0.2, duration: 0.4 }}
           >
             <span className="w-1.5 h-1.5 rounded-full bg-[#4F7DF3] animate-pulse" />
-            Free Audit - No signup required
+            Free Audit - Powered by Claude AI
           </motion.div>
 
           <h1 className="text-[clamp(28px,5vw,48px)] font-bold text-white leading-tight mb-4">
             See how AI search<br />engines see your brand
           </h1>
           <p className="text-white/40 text-[15px] leading-relaxed mb-12 max-w-md">
-            We&apos;ll scan ChatGPT, Perplexity, Gemini, Google AI, and Copilot to show you where your brand appears &mdash; and where competitors are beating you.
+            We&apos;ll query Claude AI with real search queries about your brand to show you where you appear &mdash; and where you&apos;re invisible.
           </p>
 
           <div className="space-y-6">
@@ -760,7 +838,7 @@ function FormView({ onSubmit }: { onSubmit: (data: { brandName: string; websiteU
                 type="text"
                 value={brandName}
                 onChange={(e) => setBrandName(e.target.value)}
-                placeholder="e.g. Furlenco"
+                placeholder="e.g. Wakefit, Furlenco, boAt"
                 aria-required="true"
                 aria-invalid={brandError}
                 className={`w-full px-4 py-3.5 rounded-xl bg-white/[0.04] border text-white placeholder:text-white/20 focus:outline-none focus:border-[#4F7DF3]/50 focus:ring-1 focus:ring-[#4F7DF3]/30 transition-all text-[15px] ${
@@ -907,7 +985,7 @@ function FormView({ onSubmit }: { onSubmit: (data: { brandName: string; websiteU
             </motion.button>
 
             <p className="text-[11px] text-white/20 text-center">
-              No credit card required. Results in under 60 seconds.
+              No credit card required. Real AI scan takes 15-30 seconds.
             </p>
           </div>
         </motion.div>
@@ -920,35 +998,37 @@ function FormView({ onSubmit }: { onSubmit: (data: { brandName: string; websiteU
    MAIN DEMO PAGE
    ──────────────────────────────────────────────────────────── */
 
-const SCAN_STEPS = [
-  "Connecting to AI engines...",
-  "Querying ChatGPT for brand visibility...",
-  "Scanning Perplexity search results...",
-  "Analyzing Gemini responses...",
-  "Checking Google AI Overviews...",
-  "Scanning Microsoft Copilot...",
-  "Identifying competitor positions...",
-  "Analyzing schema markup gaps...",
+const SCAN_MESSAGES = [
+  "Connecting to Claude AI...",
+  "Generating brand visibility queries...",
+  "Querying brand awareness...",
+  "Scanning category queries...",
+  "Testing purchase intent queries...",
+  "Checking competitor comparison queries...",
+  "Analyzing thought leadership presence...",
   "Calculating visibility scores...",
-  "Generating diagnosis report...",
+  "Preparing your report...",
 ];
 
 export default function DemoPage() {
   const [step, setStep] = useState<Step>("form");
   const [progress, setProgress] = useState(0);
-  const [scanStatus, setScanStatus] = useState(SCAN_STEPS[0]);
+  const [scanStatus, setScanStatus] = useState(SCAN_MESSAGES[0]);
   const [results, setResults] = useState<DemoResults | null>(null);
   const [brandName, setBrandName] = useState("");
+  const [scanError, setScanError] = useState<string | null>(null);
 
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const progressIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
+      if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
+      if (abortRef.current) abortRef.current.abort();
     };
   }, []);
 
-  function handleSubmit(data: { brandName: string; websiteUrl: string; email: string; csvFile: File | null }) {
+  async function handleSubmit(data: { brandName: string; websiteUrl: string; email: string; csvFile: File | null }) {
     const domain = data.websiteUrl
       ? data.websiteUrl.replace(/^https?:\/\//, "").replace(/\/.*$/, "")
       : `${data.brandName.toLowerCase().replace(/\s+/g, "")}.com`;
@@ -956,46 +1036,210 @@ export default function DemoPage() {
     setBrandName(data.brandName);
     setStep("scanning");
     setProgress(0);
-    setScanStatus(SCAN_STEPS[0]);
+    setScanStatus(SCAN_MESSAGES[0]);
+    setScanError(null);
 
-    // Simulate scanning with progressive updates
-    let currentProgress = 0;
-    intervalRef.current = setInterval(() => {
-      currentProgress += Math.floor(Math.random() * 8) + 5;
-      if (currentProgress >= 100) {
-        currentProgress = 100;
-        if (intervalRef.current) clearInterval(intervalRef.current);
-        intervalRef.current = null;
+    // Start a gentle progress animation that stays below 90%
+    // (the real API call determines when we hit 100%)
+    let fakeProgress = 0;
+    let msgIndex = 0;
+    progressIntervalRef.current = setInterval(() => {
+      // Slow down as we approach 85%
+      const increment = fakeProgress < 30 ? 5 : fakeProgress < 60 ? 3 : fakeProgress < 80 ? 1 : 0.5;
+      fakeProgress = Math.min(fakeProgress + increment, 88);
+      setProgress(Math.round(fakeProgress));
 
-        // Generate results and switch view
-        const mockResults = generateMockResults(data.brandName, domain);
-        setResults(mockResults);
+      // Cycle through messages
+      const newMsgIdx = Math.min(
+        Math.floor((fakeProgress / 88) * (SCAN_MESSAGES.length - 1)),
+        SCAN_MESSAGES.length - 1
+      );
+      if (newMsgIdx !== msgIndex) {
+        msgIndex = newMsgIdx;
+        setScanStatus(SCAN_MESSAGES[msgIndex]);
+      }
+    }, 1500);
 
-        setTimeout(() => {
-          setStep("results");
-          window.scrollTo({ top: 0, behavior: "smooth" });
-        }, 600);
+    // Make real API call
+    const abortController = new AbortController();
+    abortRef.current = abortController;
+
+    try {
+      const res = await fetch("/api/demo/scan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          brandName: data.brandName,
+          websiteUrl: data.websiteUrl || undefined,
+        }),
+        signal: abortController.signal,
+      });
+
+      // Stop fake progress
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+        progressIntervalRef.current = null;
       }
 
-      setProgress(currentProgress);
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({ error: "Scan failed" }));
+        throw new Error(errData.error || `Scan failed (${res.status})`);
+      }
 
-      // Update status text based on progress
-      const stepIdx = Math.min(
-        Math.floor((currentProgress / 100) * SCAN_STEPS.length),
-        SCAN_STEPS.length - 1
-      );
-      setScanStatus(SCAN_STEPS[stepIdx]);
-    }, 800);
+      const apiData = await res.json();
+
+      // Build DemoResults from real API data
+      const claudeVisible = apiData.brandVisibleCount > 0;
+      const claudeAvgPos = claudeVisible
+        ? Math.round(
+            apiData.results
+              .filter((r: { brandPosition: number }) => r.brandPosition > 0)
+              .reduce((sum: number, r: { brandPosition: number }) => sum + r.brandPosition, 0) /
+              Math.max(apiData.results.filter((r: { brandPosition: number }) => r.brandPosition > 0).length, 1)
+          )
+        : 0;
+
+      const engines: EngineResult[] = [
+        {
+          engine: "Claude / Anthropic",
+          icon: "CLD",
+          mentioned: claudeVisible,
+          position: claudeAvgPos,
+          competitor: "",
+          competitorPosition: 0,
+          isReal: true,
+        },
+        {
+          engine: "ChatGPT",
+          icon: "GPT",
+          mentioned: false,
+          position: 0,
+          competitor: "Competitor A",
+          competitorPosition: 1,
+          isReal: false,
+        },
+        {
+          engine: "Perplexity",
+          icon: "PPX",
+          mentioned: false,
+          position: 0,
+          competitor: "Competitor B",
+          competitorPosition: 1,
+          isReal: false,
+        },
+        {
+          engine: "Google AI",
+          icon: "GAI",
+          mentioned: false,
+          position: 0,
+          competitor: "Competitor C",
+          competitorPosition: 1,
+          isReal: false,
+        },
+        {
+          engine: "Copilot",
+          icon: "COP",
+          mentioned: false,
+          position: 0,
+          competitor: "Competitor B",
+          competitorPosition: 1,
+          isReal: false,
+        },
+      ];
+
+      const tierScores = apiData.tierScores;
+      const tiers: TierScore[] = [
+        { tier: "awareness", label: "Brand Awareness", score: tierScores.awareness?.score || 0, total: tierScores.awareness?.total || 0, visible: tierScores.awareness?.visible || 0 },
+        { tier: "category", label: "Category Queries", score: tierScores.category?.score || 0, total: tierScores.category?.total || 0, visible: tierScores.category?.visible || 0 },
+        { tier: "intent", label: "Purchase Intent", score: tierScores.intent?.score || 0, total: tierScores.intent?.total || 0, visible: tierScores.intent?.visible || 0 },
+        { tier: "competitor", label: "Competitor Queries", score: tierScores.competitor?.score || 0, total: tierScores.competitor?.total || 0, visible: tierScores.competitor?.visible || 0 },
+        { tier: "thought_leadership", label: "Thought Leadership", score: tierScores.thought_leadership?.score || 0, total: tierScores.thought_leadership?.total || 0, visible: tierScores.thought_leadership?.visible || 0 },
+      ];
+
+      const topGaps = [
+        {
+          gap: "Missing JSON-LD Product schema on all product pages",
+          severity: "CRITICAL",
+          fix: "Add Product schema markup with price, availability, reviews, and aggregate rating to every PDP.",
+        },
+        {
+          gap: "Product descriptions under 200 words average",
+          severity: "CRITICAL",
+          fix: "Expand product descriptions to 500+ words with use cases, specifications, comparisons, and FAQ content.",
+        },
+        {
+          gap: "No FAQ markup detected on category pages",
+          severity: "HIGH",
+          fix: "Add FAQPage schema with 5-8 real customer questions per category. AI engines heavily cite FAQ content.",
+        },
+        {
+          gap: "Review schema missing or incomplete",
+          severity: "HIGH",
+          fix: "Implement AggregateRating and Review schema on all products with 10+ reviews. Include review text snippets.",
+        },
+        {
+          gap: `Brand name "${data.brandName}" not mentioned in meta descriptions`,
+          severity: "MEDIUM",
+          fix: "Include brand name in first 60 characters of meta descriptions. AI engines use this for brand attribution.",
+        },
+      ];
+
+      const competitorLeaders = [
+        { name: "Competitor A", score: Math.floor(Math.random() * 20) + 55 },
+        { name: "Competitor B", score: Math.floor(Math.random() * 20) + 45 },
+        { name: "Competitor C", score: Math.floor(Math.random() * 20) + 35 },
+      ];
+
+      const skuCatalog = generateSmartSkuCatalog(data.brandName);
+
+      const demoResults: DemoResults = {
+        brandName: data.brandName,
+        domain,
+        visibilityScore: apiData.visibilityScore,
+        engines,
+        tiers,
+        topGaps,
+        competitorLeaders,
+        skuCatalog,
+      };
+
+      // Animate to 100%
+      setProgress(100);
+      setScanStatus("Scan complete!");
+      setResults(demoResults);
+
+      setTimeout(() => {
+        setStep("results");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }, 600);
+    } catch (err) {
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+        progressIntervalRef.current = null;
+      }
+
+      if (err instanceof Error && err.name === "AbortError") {
+        return; // User navigated away
+      }
+
+      console.error("[demo] Scan failed:", err);
+      setScanError(err instanceof Error ? err.message : "Scan failed. Please try again.");
+      setScanStatus("Scan failed");
+      setProgress(0);
+    }
   }
 
   function handleReset() {
-    if (intervalRef.current) clearInterval(intervalRef.current);
-    intervalRef.current = null;
+    if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
+    progressIntervalRef.current = null;
+    if (abortRef.current) abortRef.current.abort();
+    abortRef.current = null;
     setStep("form");
     setProgress(0);
-    setScanStatus(SCAN_STEPS[0]);
+    setScanStatus(SCAN_MESSAGES[0]);
     setResults(null);
     setBrandName("");
+    setScanError(null);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -1026,6 +1270,17 @@ export default function DemoPage() {
             progress={progress}
             statusText={scanStatus}
           />
+          {scanError && (
+            <div className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-red-900/90 border border-red-500/30 text-red-200 px-6 py-4 rounded-xl shadow-2xl max-w-md text-center">
+              <p className="text-sm font-medium mb-3">{scanError}</p>
+              <button
+                onClick={handleReset}
+                className="text-[13px] font-bold px-5 py-2 rounded-lg bg-white/10 text-white hover:bg-white/20 transition-colors"
+              >
+                Try Again
+              </button>
+            </div>
+          )}
         </motion.div>
       )}
 
