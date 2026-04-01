@@ -57,12 +57,12 @@ export default function LandingPage() {
           <FadeUp delay={0.15}>
             <div className="flex items-center justify-center gap-8 md:gap-16 flex-wrap">
               {[
-                { name: "TataCliq", subtitle: "tatamishop" },
+                { name: "Tata MiSHOP", subtitle: "tatamishop.com" },
                 { name: "Giveasy.in", subtitle: null },
                 { name: "Peesafe", subtitle: null },
               ].map((brand) => (
                 <div key={brand.name} className="flex flex-col items-center">
-                  <span className="text-[22px] md:text-[28px] font-bold tracking-[-0.02em] text-[#1A1A2E]/70">
+                  <span className="text-[28px] md:text-[38px] font-bold tracking-[-0.02em] text-[#1A1A2E]/70">
                     {brand.name}
                   </span>
                   {brand.subtitle && (

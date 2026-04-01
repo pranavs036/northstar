@@ -216,16 +216,16 @@ export default function LandingHero() {
           <SplitText
             text="PRODUCTS DON'T GET SEARCHED ANYMORE."
             className="text-[clamp(36px,7vw,86px)] leading-[0.95] tracking-[-0.02em] uppercase font-normal"
-            scatter={true}
-            staggerDelay={0.025}
+            scatter={false}
+            staggerDelay={0.012}
             as="h1"
           />
           <SplitText
             text="THEY GET RECOMMENDED."
             className="text-[clamp(36px,7vw,86px)] leading-[0.95] tracking-[-0.02em] uppercase font-normal mt-2"
-            scatter={true}
-            delay={0.6}
-            staggerDelay={0.025}
+            scatter={false}
+            delay={0.4}
+            staggerDelay={0.012}
             as="h1"
           />
         </div>
@@ -255,14 +255,14 @@ export default function LandingHero() {
           animate={mounted ? { opacity: 1, y: 0 } : {}}
           transition={{ delay: 2.2, duration: 0.6, ease: "easeOut" }}
         >
-          <p className="text-[13px] tracking-[0.04em] text-[#1A1A2E]/40 mb-3 uppercase">
-            Currently working with early partners including
+          <p className="text-[12px] tracking-[0.08em] text-[#1A1A2E]/40 mb-4 uppercase">
+            Working with early partners including
           </p>
-          <div className="flex items-center justify-center gap-6 md:gap-10 flex-wrap">
-            {["TataCliq", "Giveasy.in", "Peesafe"].map((brand) => (
+          <div className="flex items-center justify-center gap-8 md:gap-14 flex-wrap">
+            {["Tata MiSHOP", "Giveasy.in", "Peesafe"].map((brand) => (
               <span
                 key={brand}
-                className="text-[16px] md:text-[18px] font-bold tracking-[-0.01em] text-[#1A1A2E]/50"
+                className="text-[20px] md:text-[26px] font-bold tracking-[-0.02em] text-[#1A1A2E]/60"
               >
                 {brand}
               </span>
