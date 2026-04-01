@@ -205,7 +205,7 @@ export default function LandingHero() {
       </header>
 
       {/* Hero Content */}
-      <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 md:px-12 -mt-10">
+      <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 md:px-12 mt-8 md:mt-16">
         {/* Radar - positioned behind text */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-40 md:opacity-50">
           <RadarAnimation size={400} />
