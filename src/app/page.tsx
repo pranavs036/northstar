@@ -259,39 +259,7 @@ export default function LandingPage() {
         </div>
       </LandingSection>
 
-      {/* ─── SECTION 8: BRAND STATEMENT (Gradient) ─── */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden animated-gradient bg-gradient-to-br from-[#4F7DF3] via-[#34D399] to-[#FBBF24]">
-        <div className="relative z-10 max-w-[900px] mx-auto px-6 md:px-12 text-center">
-          <SplitText
-            text="PRODUCTS DON'T GET SEARCHED ANYMORE."
-            className="text-[clamp(32px,6vw,72px)] leading-[1.0] tracking-[-0.02em] uppercase font-normal text-white drop-shadow-[0_0_80px_rgba(79,125,243,0.3)]"
-            as="h2"
-          />
-          <SplitText
-            text="THEY GET RECOMMENDED."
-            className="text-[clamp(32px,6vw,72px)] leading-[1.0] tracking-[-0.02em] uppercase font-normal text-white drop-shadow-[0_0_80px_rgba(79,125,243,0.3)] mt-2"
-            delay={0.3}
-            as="h2"
-          />
-
-          <FadeUp delay={0.6} className="mt-8">
-            <p className="text-[clamp(20px,3vw,32px)] leading-[1.2] uppercase font-normal text-white/80 tracking-[-0.01em]">
-              Make sure AI recommends yours.
-            </p>
-          </FadeUp>
-
-          <FadeUp delay={0.8} className="mt-12">
-            <Link
-              href="/demo"
-              className="inline-flex items-center gap-2 text-[14px] font-bold px-8 py-4 rounded-[6.25em] border border-white/20 bg-white text-[#1A1A2E] hover:bg-white/90 transition-all"
-            >
-              Run Free Audit <span aria-hidden="true">&rarr;</span>
-            </Link>
-          </FadeUp>
-        </div>
-      </section>
-
-      {/* ─── SECTION 9: FOOTER ─── */}
+      {/* ─── FOOTER ─── */}
       <LandingFooter />
     </div>
   );

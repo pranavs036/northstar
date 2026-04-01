@@ -10,6 +10,8 @@ export function middleware(request: NextRequest) {
   const isRoot = pathname === "/";
   // Invite acceptance pages are publicly accessible (token-gated)
   const isInvitePage = pathname.startsWith("/invite");
+  // Demo page is publicly accessible (free audit)
+  const isDemoPage = pathname.startsWith("/demo");
 
   // Validate the pb_auth cookie actually contains a PocketBase token
   let isAuthenticated = false;
@@ -37,7 +39,8 @@ export function middleware(request: NextRequest) {
     !isAuthPage &&
     !isApiRoute &&
     !isRoot &&
-    !isInvitePage
+    !isInvitePage &&
+    !isDemoPage
   ) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
