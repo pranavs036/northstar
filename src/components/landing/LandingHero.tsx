@@ -124,21 +124,15 @@ export default function LandingHero() {
           <div className="flex items-center gap-8">
             <Link
               href="/demo"
-              className="hidden md:block text-[13px] font-bold text-[#1A1A2E]/70 hover:text-[#1A1A2E] transition-colors"
+              className="hidden md:flex text-[13px] font-bold items-center gap-2 px-5 py-2.5 rounded-[6.25em] border-2 border-[#1A1A2E] text-[#1A1A2E] hover:bg-[#1A1A2E]/5 transition-all"
             >
               Free Audit
             </Link>
-            <a
-              href="mailto:pranavs036@gmail.com"
-              className="hidden md:block text-[13px] font-bold text-[#1A1A2E]/70 hover:text-[#1A1A2E] transition-colors"
-            >
-              Contact Us
-            </a>
             <Link
-              href="/demo"
-              className="hidden md:flex text-[13px] font-bold items-center gap-2 px-5 py-2.5 rounded-[6.25em] bg-[#4F7DF3] text-white hover:bg-[#4F7DF3]/90 transition-all shadow-md shadow-[#4F7DF3]/20"
+              href="/demo?mode=contact"
+              className="hidden md:flex text-[13px] font-bold items-center gap-2 px-5 py-2.5 rounded-[6.25em] bg-[#1A1A2E] text-[#E5E4E0] hover:bg-[#1A1A2E]/90 transition-all"
             >
-              Live Demo <span aria-hidden="true">&rarr;</span>
+              Get Demo <span aria-hidden="true">&rarr;</span>
             </Link>
             {/* Mobile menu button */}
             <button
@@ -183,19 +177,12 @@ export default function LandingHero() {
                 >
                   Free Audit
                 </Link>
-                <a
-                  href="mailto:pranavs036@gmail.com"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="text-[14px] font-bold text-[#1A1A2E]/70 hover:text-[#1A1A2E] transition-colors py-1"
-                >
-                  Contact Us
-                </a>
                 <div className="border-t border-[rgba(111,111,111,0.15)] pt-3 mt-1">
                   <Link
-                    href="/demo"
-                    className="text-[13px] font-bold flex items-center justify-center gap-2 px-5 py-2.5 rounded-[6.25em] bg-[#4F7DF3] text-white hover:bg-[#4F7DF3]/90 transition-all w-full shadow-md shadow-[#4F7DF3]/20"
+                    href="/demo?mode=contact"
+                    className="text-[13px] font-bold flex items-center justify-center gap-2 px-5 py-2.5 rounded-[6.25em] bg-[#1A1A2E] text-[#E5E4E0] hover:bg-[#1A1A2E]/90 transition-all w-full"
                   >
-                    Live Demo <span aria-hidden="true">&rarr;</span>
+                    Get Demo <span aria-hidden="true">&rarr;</span>
                   </Link>
                 </div>
               </div>
@@ -250,19 +237,19 @@ export default function LandingHero() {
 
         {/* Social proof — legally safe language */}
         <motion.div
-          className="relative mt-16 text-center"
+          className="relative mt-16 mb-8 text-center"
           initial={{ opacity: 0, y: 20 }}
           animate={mounted ? { opacity: 1, y: 0 } : {}}
           transition={{ delay: 2.2, duration: 0.6, ease: "easeOut" }}
         >
-          <p className="text-[12px] tracking-[0.08em] text-[#1A1A2E]/40 mb-4 uppercase">
+          <p className="text-[12px] tracking-[0.08em] text-[#1A1A2E]/40 mb-6 uppercase">
             Working with early partners including
           </p>
-          <div className="flex items-center justify-center gap-8 md:gap-14 flex-wrap">
+          <div className="flex items-center justify-center gap-10 md:gap-16 flex-wrap">
             {["Tatami Shop", "Giveasy.in", "Peesafe"].map((brand) => (
               <span
                 key={brand}
-                className="text-[20px] md:text-[26px] font-bold tracking-[-0.02em] text-[#1A1A2E]/60"
+                className="text-[24px] md:text-[32px] font-bold tracking-[-0.02em] text-[#1A1A2E]/70"
               >
                 {brand}
               </span>
@@ -273,7 +260,7 @@ export default function LandingHero() {
 
       {/* Scroll indicator */}
       <motion.div
-        className="absolute bottom-8 right-8 text-[11px] tracking-[0.15em] uppercase text-[#1A1A2E]/30"
+        className="pb-12 text-center text-[11px] tracking-[0.15em] uppercase text-[#1A1A2E]/30"
         style={{ opacity: scrollIndicatorOpacity }}
       >
         SCROLL &darr;

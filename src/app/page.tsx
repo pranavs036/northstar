@@ -41,16 +41,16 @@ export default function LandingPage() {
   return (
     <div className="landing-page bg-[#E5E4E0] overflow-x-hidden">
       <CustomCursor />
-      <ScrollProgress />
+      {/* ScrollProgress removed — was the left nav line */}
 
       {/* ─── SECTION 1: HERO ─── */}
       <LandingHero />
 
-      {/* ─── SECTION 2: THE URGENCY / FOMO (Dark, Full Width) ─── */}
-      <section className="relative bg-[#1A1A2E] text-[#E5E4E0] overflow-hidden" id="the-shift">
+      {/* ─── SECTION 2: THE URGENCY / FOMO ─── */}
+      <section className="relative bg-[#E5E4E0] text-[#1A1A2E] overflow-hidden border-t border-[rgba(111,111,111,0.12)]" id="the-shift">
         <div className="max-w-[1100px] mx-auto px-6 md:px-12 py-24 md:py-36 lg:py-44">
           <FadeUp>
-            <p className="text-[#FBBF24] text-[18px] tracking-wider mb-10">
+            <p className="text-[#D97706] text-[18px] tracking-wider mb-10">
               &#9733;&#9733;&#9733;&#9733;
             </p>
           </FadeUp>
@@ -62,17 +62,17 @@ export default function LandingPage() {
           </FadeUp>
 
           <FadeUp delay={0.25}>
-            <div className="w-full h-[1px] bg-[rgba(255,255,255,0.08)] my-12 md:my-16" />
+            <div className="w-full h-[1px] bg-[rgba(26,26,46,0.1)] my-12 md:my-16" />
           </FadeUp>
 
           <FadeUp delay={0.35}>
-            <p className="text-[clamp(18px,2.5vw,26px)] leading-[1.5] text-[#E5E4E0]/70 max-w-[850px]">
-              Traffic is shifting from Google to ChatGPT, Perplexity, and AI agents — and your SEO strategy doesn&apos;t cover this. AI engines don&apos;t rank links. They <span className="text-[#FBBF24] font-bold">recommend brands</span>. If you&apos;re not in the answer, you don&apos;t exist.
+            <p className="text-[clamp(18px,2.5vw,26px)] leading-[1.5] text-[#1A1A2E]/60 max-w-[850px]">
+              Traffic is shifting from Google to ChatGPT, Perplexity, and AI agents — and your SEO strategy doesn&apos;t cover this. AI engines don&apos;t rank links. They <span className="text-[#D97706] font-bold">recommend brands</span>. If you&apos;re not in the answer, you don&apos;t exist.
             </p>
           </FadeUp>
 
           <FadeUp delay={0.5}>
-            <p className="text-[clamp(16px,2vw,20px)] leading-[1.5] text-[#E5E4E0]/50 max-w-[750px] mt-8">
+            <p className="text-[clamp(16px,2vw,20px)] leading-[1.5] text-[#1A1A2E]/45 max-w-[750px] mt-8">
               Your schema markup, content depth, review signals, and structured data determine whether AI cites you or your competitor. NorthStar tells you exactly where you&apos;re losing — and how to fix it.
             </p>
           </FadeUp>
@@ -80,7 +80,7 @@ export default function LandingPage() {
           <FadeUp delay={0.6} className="mt-12">
             <Link
               href="/demo"
-              className="inline-flex items-center gap-2 text-[14px] font-bold px-7 py-3.5 rounded-[6.25em] border border-[#FBBF24]/30 bg-[#FBBF24]/10 text-[#FBBF24] hover:bg-[#FBBF24]/20 transition-all"
+              className="inline-flex items-center gap-2 text-[14px] font-bold px-7 py-3.5 rounded-[6.25em] border-2 border-[#1A1A2E] bg-[#1A1A2E] text-[#E5E4E0] hover:bg-[#1A1A2E]/90 transition-all"
             >
               See where you stand <span aria-hidden="true">&rarr;</span>
             </Link>
