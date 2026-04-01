@@ -5,13 +5,9 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   Package,
-  Users,
-  FileSearch,
   Settings,
   TrendingUp,
-  Link2,
-  FileCode,
-  MessageSquare,
+  SlidersHorizontal,
 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 
@@ -27,34 +23,14 @@ const navItems = [
     icon: Package,
   },
   {
-    label: "Competitors",
-    href: "/competitors",
-    icon: Users,
-  },
-  {
-    label: "Audits",
-    href: "/audit",
-    icon: FileSearch,
-  },
-  {
-    href: "/trends",
     label: "Trends",
+    href: "/trends",
     icon: TrendingUp,
   },
   {
-    href: "/citations",
-    label: "Citations",
-    icon: Link2,
-  },
-  {
-    href: "/schema-audit",
-    label: "Schema Audit",
-    icon: FileCode,
-  },
-  {
-    href: "/prompts",
-    label: "Prompts",
-    icon: MessageSquare,
+    label: "Configure",
+    href: "/configure",
+    icon: SlidersHorizontal,
   },
   {
     label: "Settings",

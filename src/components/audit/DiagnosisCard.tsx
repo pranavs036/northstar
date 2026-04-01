@@ -54,9 +54,12 @@ const severityConfig = {
 
 const engineLabels: Record<string, string> = {
   CHATGPT: "ChatGPT",
+  CLAUDE: "Claude",
   GOOGLE: "Google AI",
   PERPLEXITY: "Perplexity",
   BING: "Bing CoPilot",
+  GEMINI: "Gemini",
+  COPILOT: "CoPilot",
 };
 
 export function DiagnosisCard({

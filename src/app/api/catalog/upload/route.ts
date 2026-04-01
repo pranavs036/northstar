@@ -28,22 +28,25 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ message: "Brand not found" }, { status: 404 });
     }
 
-    // Create SKUs individually (PocketBase has no createMany)
+    // Create SKUs sequentially (PocketBase SQLite can't handle concurrent writes)
     let created = 0;
-    const results = await Promise.allSettled(
-      validated.rows.map((row) =>
-        pb.collection("skus").create({
+    const errors: string[] = [];
+    for (const row of validated.rows) {
+      try {
+        await pb.collection("skus").create({
           user: validated.brandId,
           skuCode: row.sku,
           name: row.product_name,
           category: row.category || "",
           url: row.url || "",
           description: row.description || "",
-        })
-      )
-    );
-
-    created = results.filter((r) => r.status === "fulfilled").length;
+        });
+        created++;
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : "Unknown error";
+        errors.push(`${row.sku}: ${msg}`);
+      }
+    }
 
     return NextResponse.json(
       {

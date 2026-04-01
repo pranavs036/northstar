@@ -1,4 +1,5 @@
 import { ReactNode } from "react";
+import Link from "next/link";
 import { ArrowUp, ArrowDown } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 
@@ -7,6 +8,7 @@ interface StatCardProps {
   value: string | number;
   icon: ReactNode;
   description?: string;
+  href?: string;
   trend?: {
     direction: "up" | "down";
     percentage: number;
@@ -18,10 +20,14 @@ export function StatCard({
   value,
   icon,
   description,
+  href,
   trend,
 }: StatCardProps) {
-  return (
-    <div className="bg-bg-secondary border border-border rounded-lg p-6 hover:border-accent-primary transition-colors">
+  const content = (
+    <div className={cn(
+      "bg-bg-secondary border border-border rounded-lg p-6 hover:border-accent-primary transition-colors",
+      href && "cursor-pointer"
+    )}>
       {/* Header with Icon */}
       <div className="flex items-start justify-between mb-4">
         <h3 className="text-sm font-medium text-text-secondary">{title}</h3>
@@ -59,4 +65,10 @@ export function StatCard({
       )}
     </div>
   );
+
+  if (href) {
+    return <Link href={href}>{content}</Link>;
+  }
+
+  return content;
 }

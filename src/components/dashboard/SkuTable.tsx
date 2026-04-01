@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { Search, ArrowUpDown } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import type { SkuWithStatus } from "@/types/catalog";
@@ -13,6 +14,7 @@ interface SkuTableProps {
 }
 
 export function SkuTable({ skus }: SkuTableProps) {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("name");
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
@@ -167,6 +169,7 @@ export function SkuTable({ skus }: SkuTableProps) {
                 {filteredAndSortedSkus.map((sku) => (
                   <tr
                     key={sku.id}
+                    onClick={() => router.push(`/catalog/${sku.id}`)}
                     className="hover:bg-bg-tertiary/30 transition-colors cursor-pointer"
                   >
                     <td className="px-6 py-4">

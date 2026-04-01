@@ -1,13 +1,10 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
-
-const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "NorthStar — AI Ecommerce Optimization",
   description:
-    "Get your products found in AI-powered search engines like ChatGPT, Google AI Overviews, and Perplexity.",
+    "Products don't get searched anymore. They get recommended. NorthStar finds why AI recommends your competitors — and fixes it.",
   icons: {
     icon: "/favicon.ico",
   },
@@ -20,7 +17,17 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>{children}</body>
+      <head>
+        <link
+          href="https://api.fontshare.com/v2/css?f[]=satoshi@400,700&display=swap"
+          rel="stylesheet"
+        />
+      </head>
+      <body
+        style={{ fontFamily: "'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}
+      >
+        {children}
+      </body>
     </html>
   );
 }

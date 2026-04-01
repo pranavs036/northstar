@@ -107,7 +107,7 @@ export function CatalogUpload({ brandId }: CatalogUploadProps) {
       setUploadSuccess(true);
 
       setTimeout(() => {
-        router.push("/catalog");
+        router.push("/audit/new");
       }, 1500);
     } catch (error) {
       setUploadError(
@@ -126,7 +126,7 @@ export function CatalogUpload({ brandId }: CatalogUploadProps) {
           Catalog Uploaded Successfully
         </h3>
         <p className="text-text-tertiary mb-4">
-          {uploadCount} products imported. Redirecting...
+          {uploadCount} products imported. Starting audit...
         </p>
       </div>
     );

@@ -10,7 +10,7 @@ export async function generateSchemaFix(
   const claude = getClaudeClient();
 
   const message = await claude.messages.create({
-    model: "claude-sonnet-4-5-20241022",
+    model: "claude-sonnet-4-20250514",
     max_tokens: 2048,
     messages: [
       {

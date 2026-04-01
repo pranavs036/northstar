@@ -1,11 +1,7 @@
 import { NextRequest } from "next/server";
 import PocketBase from "pocketbase";
 import { generateQueries } from "@/lib/ai/query-gen";
-import { scanChatGPT } from "@/lib/scanners/chatgpt";
-import { scanPerplexity } from "@/lib/scanners/perplexity";
-import { scanGoogle } from "@/lib/scanners/google";
-import { scanGemini } from "@/lib/scanners/gemini";
-import { scanCopilot } from "@/lib/scanners/copilot";
+import { scanClaude } from "@/lib/scanners/claude";
 import { generateDiagnosis } from "@/lib/ai/diagnose";
 import { extractCitations } from "@/lib/ai/citation-extractor";
 import { analyzeSentiment } from "@/lib/ai/sentiment-analyzer";
@@ -120,7 +116,7 @@ export async function POST(request: NextRequest) {
         progress: 0,
       });
 
-      const totalSteps = skus.length * 6; // queries + 5 engines per SKU
+      const totalSteps = skus.length * 7; // query gen + 5 queries scanned + diagnosis per SKU
       let completedSteps = 0;
 
       const allScanResults: Array<{
@@ -152,79 +148,40 @@ export async function POST(request: NextRequest) {
           });
         } catch (err) {
           console.error(`[audit] Query gen failed for ${sku.name}:`, err);
+          // Smart fallback — product-type queries without brand name
+          const cat = (sku.category || "product").toLowerCase();
           queries = [
-            `best ${sku.category || "product"} like ${sku.name}`,
-            `${sku.name} review`,
-            `recommended ${sku.category || "products"} 2025`,
+            `best ${cat} under 5000 India`,
+            `${cat} with good quality for daily use`,
+            `affordable ${cat} recommendation 2026`,
+            `which ${cat} to buy on a budget`,
+            `${cat} that lasts long and worth the money`,
           ];
         }
 
         completedSteps++;
 
-        // Step 2: Scan each engine with first query (to keep audit fast)
-        const primaryQuery = queries[0];
-        const scanInput = {
-          query: primaryQuery,
-          brandDomain,
-          competitorDomains,
-        };
-
         send("audit:scanning", {
           auditId,
-          message: `Scanning AI engines for "${sku.name}"...`,
+          message: `Scanning ${queries.length} queries for "${sku.name}"...`,
           skuName: sku.name,
           progress: Math.round((completedSteps / totalSteps) * 100),
         });
 
-        // Run scanners with delays to respect rate limits
-        const scanners = [
-          { fn: scanChatGPT, name: "ChatGPT" },
-          { fn: scanPerplexity, name: "Perplexity" },
-          { fn: scanGoogle, name: "Google" },
-          { fn: scanGemini, name: "Gemini" },
-          { fn: scanCopilot, name: "Copilot" },
-        ];
-
-        for (const scanner of scanners) {
+        // Step 2: Scan ALL queries for this SKU (not just the first one)
+        for (const query of queries) {
           try {
-            const result = await scanner.fn(scanInput);
+            const result = await scanClaude({
+              query,
+              brandDomain,
+              competitorDomains,
+            });
 
-            // Skip enrichment for stub/skipped responses
             const isSkipped = result.rawResponse.startsWith("[SKIPPED]") ||
               result.rawResponse.startsWith("[STUB]") ||
               result.rawResponse.startsWith("[ERROR]");
 
-            let sentimentLabel = "NEUTRAL";
-            let sentimentScore = 0;
-            let sentimentReasoning = "Skipped — no real response";
-            let citationsJson = "[]";
-            let citationCount = 0;
-            let brandCited = false;
-
-            if (!isSkipped && result.rawResponse.length > 50) {
-              send("audit:enriching", {
-                message: `Analyzing citations & sentiment for ${sku.name} on ${result.engine}`,
-                skuName: sku.name,
-                engine: result.engine,
-              });
-
-              try {
-                const [citationAnalysis, sentimentResult] = await Promise.all([
-                  extractCitations(result.rawResponse, brandDomain, competitorDomains),
-                  analyzeSentiment(result.rawResponse, brandDomain, sku.name),
-                ]);
-                sentimentLabel = sentimentResult.label;
-                sentimentScore = sentimentResult.score;
-                sentimentReasoning = sentimentResult.reasoning;
-                citationsJson = JSON.stringify(citationAnalysis.citations);
-                citationCount = citationAnalysis.totalCitations;
-                brandCited = citationAnalysis.brandCitations > 0;
-              } catch (enrichErr) {
-                console.error(`[audit] Enrichment failed for ${sku.name}/${result.engine}:`, enrichErr);
-              }
-            }
-
-            // Store scan result in PocketBase
+            // Store scan result — skip expensive enrichment for now, just store core data
             await pb.collection("scan_results").create({
               sku: sku.id,
               engine: result.engine,
@@ -232,12 +189,13 @@ export async function POST(request: NextRequest) {
               brandVisible: result.brandVisible,
               competitorDomain: result.competitorDomain,
               rawResponse: result.rawResponse.slice(0, 10000),
-              sentimentLabel,
-              sentimentScore,
-              sentimentReasoning,
-              citations: citationsJson,
-              citationCount,
-              brandCited,
+              sentimentLabel: "NEUTRAL",
+              sentimentScore: 0,
+              sentimentReasoning: "",
+              citations: "[]",
+              citationCount: 0,
+              brandCited: result.brandVisible,
+              brandPosition: result.brandPosition || 0,
             });
 
             allScanResults.push({
@@ -251,25 +209,24 @@ export async function POST(request: NextRequest) {
               rawResponse: result.rawResponse,
             });
 
+            const posLabel = result.brandPosition > 0 ? `#${result.brandPosition}` : "not found";
+
             send("audit:scan-result", {
               auditId,
-              message: `${scanner.name}: ${result.brandVisible ? "✓ Brand visible" : "✗ Brand NOT visible"}`,
+              message: `"${query.slice(0, 50)}..." → ${posLabel}`,
               skuName: sku.name,
               engine: result.engine,
               progress: Math.round((completedSteps / totalSteps) * 100),
             });
           } catch (err) {
-            console.error(
-              `[audit] ${scanner.name} scan failed for ${sku.name}:`,
-              err
-            );
+            console.error(`[audit] Scan failed for "${query}":`, err);
           }
 
-          completedSteps++;
-
-          // Rate limit: 2s delay between engine calls
+          // Rate limit: 2s between queries
           await new Promise((r) => setTimeout(r, 2000));
         }
+
+        completedSteps++;
       }
 
       // Step 3: Generate diagnoses for non-visible SKUs

@@ -1,15 +1,22 @@
 import { createServerClient } from "@/lib/pocketbase/server";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import {
-  BarChart3,
-  TrendingUp,
+  Globe,
   Package,
   Zap,
+  TrendingUp,
+  AlertTriangle,
+  ChevronRight,
+  Eye,
+  EyeOff,
 } from "lucide-react";
-import { StatCard } from "@/components/dashboard/StatCard";
-import { SkuTable } from "@/components/dashboard/SkuTable";
-import type { SkuWithStatus } from "@/types/catalog";
-import type { SkuRecord, ScanResultRecord, DiagnosisRecord, AuditRecord } from "@/types/pocketbase";
+import { BrandScanWidget } from "@/components/dashboard/BrandScanWidget";
+import { SkuAnalysisCard } from "@/components/dashboard/SkuAnalysisCard";
+import type { SkuRecord, ScanResultRecord, DiagnosisRecord } from "@/types/pocketbase";
+import { calculateSkuVisibilityRate } from "@/lib/utils/scoring";
+
+export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
   const pb = await createServerClient();
@@ -21,132 +28,279 @@ export default async function DashboardPage() {
   const user = pb.authStore.record;
   const userId = user.id;
 
-  // Fetch data in parallel
+  // Fetch data
   let skus: SkuRecord[] = [];
-  let audits: AuditRecord[] = [];
   try {
-    [skus, audits] = await Promise.all([
-      pb.collection("skus").getFullList<SkuRecord>({ filter: `user="${userId}"` }),
-      pb.collection("audits").getFullList<AuditRecord>({ filter: `user="${userId}"`, sort: "-created" }),
-    ]);
-  } catch (err) {
-    console.error("[dashboard] Failed to fetch data:", err);
+    skus = await pb.collection("skus").getFullList<SkuRecord>({ filter: `user="${userId}"` });
+  } catch {
+    // no skus
   }
 
-  // Fetch scan results and diagnoses for all SKUs
+  // Fetch scan results for SKU analysis
   const skuIds = skus.map((s) => s.id);
   let scanResults: ScanResultRecord[] = [];
   let diagnoses: DiagnosisRecord[] = [];
 
   if (skuIds.length > 0) {
-    const skuFilter = skuIds.map((id) => `sku="${id}"`).join("||");
-    [scanResults, diagnoses] = await Promise.all([
-      pb.collection("scan_results").getFullList<ScanResultRecord>({ filter: skuFilter }),
-      pb.collection("diagnoses").getFullList<DiagnosisRecord>({ filter: skuFilter }),
-    ]);
+    try {
+      // Batch SKU IDs to avoid PocketBase filter length limits with large catalogs
+      const BATCH_SIZE = 50;
+      const batches: string[][] = [];
+      for (let i = 0; i < skuIds.length; i += BATCH_SIZE) {
+        batches.push(skuIds.slice(i, i + BATCH_SIZE));
+      }
+
+      const [scanBatches, diagBatches] = await Promise.all([
+        Promise.all(batches.map((batch) => {
+          const skuFilter = batch.map((id) => `sku="${id}"`).join("||");
+          return pb.collection("scan_results").getFullList<ScanResultRecord>({ filter: skuFilter });
+        })),
+        Promise.all(batches.map((batch) => {
+          const skuFilter = batch.map((id) => `sku="${id}"`).join("||");
+          return pb.collection("diagnoses").getFullList<DiagnosisRecord>({ filter: skuFilter });
+        })),
+      ]);
+      scanResults = scanBatches.flat();
+      diagnoses = diagBatches.flat();
+    } catch {
+      // no results yet
+    }
   }
 
-  // Calculate stats
+  // Find alarming SKUs (0% visibility with scan data, or critical diagnoses)
+  const alarmingSkus = skus
+    .map((sku) => {
+      const skuScans = scanResults.filter((r) => r.sku === sku.id);
+      const skuDiags = diagnoses.filter((d) => d.sku === sku.id);
+      const visRate = calculateSkuVisibilityRate(skuScans);
+      const criticalCount = skuDiags.filter((d) => d.severity === "CRITICAL").length;
+      return { sku, scanCount: skuScans.length, visRate, criticalCount };
+    })
+    .filter((s) => s.scanCount > 0 && (s.visRate === 0 || s.criticalCount > 0))
+    .sort((a, b) => b.criticalCount - a.criticalCount)
+    .slice(0, 3);
+
+  // SKU stats
   const totalSkus = skus.length;
+  const scannedSkus = skus.filter((s) => scanResults.some((r) => r.sku === s.id)).length;
+  const categories = Array.from(new Set(skus.map((s) => s.category).filter(Boolean)));
 
-  let visibilityRate = 0;
-  if (totalSkus > 0) {
-    const visibleSkus = skus.filter((sku) =>
-      scanResults.some((r) => r.sku === sku.id && r.brandVisible)
-    ).length;
-    visibilityRate = (visibleSkus / totalSkus) * 100;
+  // Agent readiness: check how many SKUs have URLs (can be crawled for schema)
+  const skusWithUrls = skus.filter((s) => s.url && s.url.startsWith("http")).length;
+  const agentReadinessEstimate = totalSkus > 0 ? Math.round((skusWithUrls / totalSkus) * 100) : 0;
+
+  // Latest brand scan
+  let latestBrandScan: { id: string; visibilityScore: number; completedAt: string } | null = null;
+  try {
+    const result = await pb.collection("brand_scans").getList(1, 1, {
+      filter: `user="${userId}" && status="COMPLETE"`,
+      sort: "-created",
+      fields: "id,visibilityScore,completedAt",
+    });
+    if (result.totalItems > 0) {
+      const s = result.items[0];
+      latestBrandScan = {
+        id: s.id,
+        visibilityScore: s.visibilityScore as number,
+        completedAt: s.completedAt as string,
+      };
+    }
+  } catch {
+    // no scans
   }
-
-  let agentScore = 0;
-  if (audits.length > 0 && audits[0].agentScore) {
-    agentScore = audits[0].agentScore;
-  }
-
-  const skusWithStatus: SkuWithStatus[] = skus.map((sku) => {
-    const skuScans = scanResults.filter((r) => r.sku === sku.id);
-    const skuDiags = diagnoses.filter((d) => d.sku === sku.id);
-    const scanCount = skuScans.length;
-    const visibleCount = skuScans.filter((r) => r.brandVisible).length;
-    const visRate = scanCount > 0 ? visibleCount / scanCount : null;
-
-    const severityOrder = { CRITICAL: 4, HIGH: 3, MEDIUM: 2, LOW: 1 };
-    const worstSeverity =
-      skuDiags.length > 0
-        ? skuDiags.reduce((worst, current) =>
-            (severityOrder[current.severity] || 0) > (severityOrder[worst.severity] || 0)
-              ? current
-              : worst
-          ).severity
-        : null;
-
-    return {
-      id: sku.id,
-      skuCode: sku.skuCode,
-      name: sku.name,
-      category: sku.category,
-      url: sku.url,
-      description: sku.description,
-      scanCount,
-      visibilityRate: visRate,
-      worstSeverity,
-    };
-  });
-
-  const auditCount = audits.length;
-  const recentAudits = audits.slice(0, 5);
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-4xl font-bold text-text-primary mb-2">
-          Welcome back, {user.brandName || user.name || "there"}
-        </h1>
-        <p className="text-text-tertiary">
-          Monitor your AI search visibility and track optimization progress across your product catalog.
-        </p>
+    <div className="space-y-5">
+      {/* Header — compact */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-text-primary">
+            {user.brandName || user.name || "Dashboard"}
+          </h1>
+          <p className="text-sm text-text-tertiary">AI search visibility overview</p>
+        </div>
+        <span className="text-xs text-text-tertiary">{user.domain}</span>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard title="Total SKUs" value={totalSkus} icon={<Package className="w-6 h-6" />} description="Products in your catalog" />
-        <StatCard title="Audits Run" value={auditCount} icon={<BarChart3 className="w-6 h-6" />} description="Completed optimization audits" trend={auditCount > 0 ? { direction: "up" as const, percentage: 12 } : undefined} />
-        <StatCard title="Agent-Readiness Score" value={agentScore} icon={<Zap className="w-6 h-6" />} description={agentScore >= 75 ? "Excellent optimization" : agentScore >= 50 ? "Room for improvement" : "Needs optimization"} />
-        <StatCard title="Visibility Rate" value={`${Math.round(visibilityRate)}%`} icon={<TrendingUp className="w-6 h-6" />} description="Products cited in AI engines" trend={visibilityRate > 0 ? { direction: "up" as const, percentage: 8 } : undefined} />
-      </div>
+      {/* 4 Cards — 2 columns */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-      <div>
-        <div className="mb-6">
-          <h2 className="text-2xl font-bold text-text-primary mb-2">Your Products</h2>
-          <p className="text-text-tertiary">Manage and track visibility for each SKU across AI search engines.</p>
+        {/* Card 1: Brand Analysis */}
+        <div className="bg-bg-secondary border border-border rounded-xl overflow-hidden">
+          <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Globe className="w-4 h-4 text-indigo-400" />
+              <h3 className="font-semibold text-text-primary text-sm">Brand Analysis</h3>
+            </div>
+            {latestBrandScan && (
+              <Link href={`/brand-scan/${latestBrandScan.id}`} className="text-xs text-accent-primary hover:text-accent-secondary flex items-center gap-1">
+                Details <ChevronRight className="w-3 h-3" />
+              </Link>
+            )}
+          </div>
+          <div className="p-4">
+            <BrandScanWidget
+              brandName={user.brandName || "Your Brand"}
+              brandDomain={user.domain || ""}
+              categories={categories}
+            />
+          </div>
         </div>
 
-        {totalSkus > 0 ? (
-          <SkuTable skus={skusWithStatus} />
-        ) : (
-          <div className="bg-bg-secondary border border-dashed border-border rounded-lg p-12 text-center">
-            <Package className="w-12 h-12 text-text-tertiary mx-auto mb-4 opacity-50" />
-            <h3 className="text-lg font-semibold text-text-primary mb-2">No products yet</h3>
-            <p className="text-text-tertiary mb-6">Upload your product catalog to get started with AI visibility optimization.</p>
-            <a href="/catalog" className="inline-block px-6 py-2 bg-accent-primary text-white rounded-lg hover:bg-accent-secondary transition-colors font-medium">Upload Catalog</a>
+        {/* Card 2: SKU Analysis */}
+        <div className="bg-bg-secondary border border-border rounded-xl overflow-hidden">
+          <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Package className="w-4 h-4 text-green-400" />
+              <h3 className="font-semibold text-text-primary text-sm">SKU Analysis</h3>
+              <span className="text-xs text-text-tertiary">{totalSkus} products</span>
+            </div>
+            <Link href="/catalog" className="text-xs text-accent-primary hover:text-accent-secondary flex items-center gap-1">
+              Catalog <ChevronRight className="w-3 h-3" />
+            </Link>
           </div>
-        )}
-      </div>
+          <SkuAnalysisCard totalSkus={totalSkus} />
+        </div>
 
-      {recentAudits.length > 0 && (
-        <div>
-          <h2 className="text-2xl font-bold text-text-primary mb-4">Recent Audits</h2>
-          <div className="space-y-3">
-            {recentAudits.map((audit) => (
-              <div key={audit.id} className="bg-bg-secondary border border-border rounded-lg p-4 flex items-center justify-between hover:border-accent-primary transition-colors">
-                <div>
-                  <p className="text-sm font-medium text-text-primary">Audit {audit.id.slice(0, 8)}</p>
-                  <p className="text-xs text-text-tertiary">Started {new Date(audit.created).toLocaleDateString()}</p>
+        {/* Card 3: Agent Readiness */}
+        <div className="bg-bg-secondary border border-border rounded-xl overflow-hidden">
+          <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Zap className="w-4 h-4 text-amber-400" />
+              <h3 className="font-semibold text-text-primary text-sm">Agent Readiness</h3>
+            </div>
+            <Link href="/catalog" className="text-xs text-accent-primary hover:text-accent-secondary flex items-center gap-1">
+              Audit <ChevronRight className="w-3 h-3" />
+            </Link>
+          </div>
+          <div className="p-4">
+            {totalSkus === 0 ? (
+              <p className="text-sm text-text-tertiary">Upload catalog first.</p>
+            ) : (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-3xl font-bold text-text-primary">{agentReadinessEstimate}%</span>
+                  <span className={`text-xs px-2 py-1 rounded-full ${agentReadinessEstimate >= 70 ? "bg-green-500/10 text-green-400" : agentReadinessEstimate >= 40 ? "bg-amber-500/10 text-amber-400" : "bg-red-500/10 text-red-400"}`}>
+                    {agentReadinessEstimate >= 70 ? "Good" : agentReadinessEstimate >= 40 ? "Needs work" : "Poor"}
+                  </span>
                 </div>
-                <div className="flex items-center gap-4">
-                  <p className={`text-sm font-semibold ${audit.status === "COMPLETE" ? "text-success" : audit.status === "FAILED" ? "text-error" : "text-info"}`}>{audit.status}</p>
+                <div className="w-full bg-bg-tertiary rounded-full h-1.5">
+                  <div
+                    className={`h-1.5 rounded-full ${agentReadinessEstimate >= 70 ? "bg-green-500" : agentReadinessEstimate >= 40 ? "bg-amber-500" : "bg-red-500"}`}
+                    style={{ width: `${agentReadinessEstimate}%` }}
+                  />
+                </div>
+                <div className="text-xs text-text-tertiary space-y-1">
+                  <div className="flex justify-between">
+                    <span>Product URLs configured</span>
+                    <span className="text-text-secondary">{skusWithUrls}/{totalSkus}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Schema markup detected</span>
+                    <span className="text-text-secondary">Run schema audit →</span>
+                  </div>
                 </div>
               </div>
-            ))}
+            )}
           </div>
+        </div>
+
+        {/* Card 4: Trend Analysis */}
+        <Link href="/trends" className="block bg-bg-secondary border border-border rounded-xl overflow-hidden hover:border-accent-primary transition-colors">
+          <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <TrendingUp className="w-4 h-4 text-violet-400" />
+              <h3 className="font-semibold text-text-primary text-sm">Trend Analysis</h3>
+            </div>
+            <ChevronRight className="w-4 h-4 text-text-tertiary" />
+          </div>
+          <div className="p-4">
+            {latestBrandScan ? (
+              <div className="space-y-3">
+                {/* Mini sparkline placeholder */}
+                <div className="flex items-end gap-1 h-12">
+                  {[20, 35, 25, 45, 40, 55, latestBrandScan.visibilityScore].map((v, i) => (
+                    <div
+                      key={i}
+                      className={`flex-1 rounded-sm ${i === 6 ? "bg-violet-500" : "bg-bg-tertiary"}`}
+                      style={{ height: `${Math.max(v, 5)}%` }}
+                    />
+                  ))}
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-text-tertiary">Current score</span>
+                  <span className={`font-bold ${latestBrandScan.visibilityScore >= 50 ? "text-success" : latestBrandScan.visibilityScore >= 25 ? "text-warning" : "text-error"}`}>
+                    {latestBrandScan.visibilityScore}/100
+                  </span>
+                </div>
+                <p className="text-xs text-text-tertiary">
+                  Last scan: {new Date(latestBrandScan.completedAt).toLocaleDateString()}
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <div className="flex items-end gap-1 h-12">
+                  {[10, 15, 10, 20, 15, 10, 12].map((v, i) => (
+                    <div
+                      key={i}
+                      className="flex-1 rounded-sm bg-bg-tertiary"
+                      style={{ height: `${v}%` }}
+                    />
+                  ))}
+                </div>
+                <p className="text-sm text-text-tertiary">Run a brand scan to start tracking trends.</p>
+              </div>
+            )}
+          </div>
+        </Link>
+      </div>
+
+      {/* Products Table */}
+      {totalSkus > 0 && (
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-text-primary">Your Products ({totalSkus})</h2>
+            <Link href="/catalog" className="text-sm text-accent-primary hover:text-accent-secondary">
+              View all →
+            </Link>
+          </div>
+
+          {/* Quick product list — first 5 */}
+          <div className="bg-bg-secondary border border-border rounded-xl divide-y divide-border">
+            {skus.slice(0, 5).map((sku) => {
+              const skuScans = scanResults.filter((r) => r.sku === sku.id);
+              const visRate = calculateSkuVisibilityRate(skuScans);
+              return (
+                <Link
+                  key={sku.id}
+                  href={`/catalog/${sku.id}`}
+                  className="flex items-center justify-between px-5 py-3 hover:bg-bg-tertiary/30 transition-colors"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <span className="text-xs font-mono text-text-tertiary bg-bg-tertiary px-1.5 py-0.5 rounded">{sku.skuCode}</span>
+                    <span className="text-sm text-text-primary truncate">{sku.name}</span>
+                  </div>
+                  <div className="flex items-center gap-3 flex-shrink-0">
+                    <span className="text-xs text-text-tertiary">{sku.category}</span>
+                    {visRate !== null ? (
+                      <span className={`text-sm font-semibold ${visRate > 0 ? "text-success" : "text-error"}`}>
+                        {Math.round(visRate * 100)}%
+                      </span>
+                    ) : (
+                      <span className="text-xs text-text-tertiary">—</span>
+                    )}
+                    <ChevronRight className="w-4 h-4 text-text-tertiary" />
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+
+          {totalSkus > 5 && (
+            <Link href="/catalog" className="block text-center text-sm text-accent-primary hover:text-accent-secondary mt-3">
+              View all {totalSkus} products →
+            </Link>
+          )}
         </div>
       )}
     </div>

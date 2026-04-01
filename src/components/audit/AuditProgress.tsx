@@ -2,219 +2,250 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, CheckCircle2, XCircle, Search, Brain, Zap } from "lucide-react";
+import Link from "next/link";
+import { Loader2, CheckCircle2, XCircle, AlertTriangle, Eye, EyeOff } from "lucide-react";
 
-interface AuditEvent {
-  type: string;
-  data: {
-    auditId: string;
-    message: string;
-    progress?: number;
-    skuName?: string;
-    engine?: string;
-    severity?: string;
-  };
+interface SkuScanProgress {
+  skuId: string;
+  skuName: string;
+  engine: string;
+  visible: boolean;
+}
+
+interface AuditStatus {
+  exists: boolean;
+  audit: {
+    id: string;
+    status: "PENDING" | "SCANNING" | "ANALYZING" | "COMPLETE" | "FAILED";
+    agentScore: number | null;
+    completedAt: string | null;
+    created: string;
+    scanCount: number;
+    visibleCount: number;
+    skuProgress: SkuScanProgress[];
+  } | null;
 }
 
 export function AuditProgress() {
   const router = useRouter();
-  const [status, setStatus] = useState<"idle" | "running" | "complete" | "error">("idle");
-  const [events, setEvents] = useState<AuditEvent[]>([]);
-  const [progress, setProgress] = useState(0);
-  const [auditId, setAuditId] = useState<string | null>(null);
+  const [auditStatus, setAuditStatus] = useState<AuditStatus | null>(null);
+  const [statusLoaded, setStatusLoaded] = useState(false);
+  const [isStarting, setIsStarting] = useState(false);
+  const [message, setMessage] = useState("");
 
-  const startAudit = useCallback(async () => {
-    setStatus("running");
-    setEvents([]);
-    setProgress(0);
+  const fetchAuditStatus = useCallback(async () => {
+    try {
+      const res = await fetch("/api/audit/status");
+      if (res.ok) {
+        const data = await res.json();
+        setAuditStatus(data);
+        setStatusLoaded(true);
+        return data;
+      }
+    } catch (err) {
+      console.error("[AuditProgress] Failed to fetch status:", err);
+    }
+    setStatusLoaded(true);
+    return null;
+  }, []);
+
+  const pollStatus = useCallback(() => {
+    const interval = setInterval(async () => {
+      const data = await fetchAuditStatus();
+      if (!data?.audit) return;
+
+      const s = data.audit.status;
+      if (s === "SCANNING" || s === "ANALYZING") {
+        setMessage(`Scanning... ${data.audit.scanCount} results so far`);
+      }
+      if (s === "COMPLETE" || s === "FAILED") {
+        clearInterval(interval);
+        setIsStarting(false);
+      }
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [fetchAuditStatus]);
+
+  // On mount: check if an audit is already running
+  useEffect(() => {
+    fetchAuditStatus().then((data) => {
+      if (data?.audit?.status === "SCANNING" || data?.audit?.status === "ANALYZING" || data?.audit?.status === "PENDING") {
+        setIsStarting(true);
+        setMessage("Audit in progress...");
+        pollStatus();
+      }
+    });
+  }, [fetchAuditStatus, pollStatus]);
+
+  const startAudit = async () => {
+    if (isStarting) return;
+
+    // Check if an audit is already running
+    const current = await fetchAuditStatus();
+    if (current?.audit?.status === "SCANNING" || current?.audit?.status === "ANALYZING" || current?.audit?.status === "PENDING") {
+      setIsStarting(true);
+      setMessage("Audit already in progress...");
+      pollStatus();
+      return;
+    }
+
+    setIsStarting(true);
+    setMessage("Starting audit...");
 
     try {
-      const response = await fetch("/api/audit/start", {
+      // Fire-and-forget: start the audit, don't read the SSE stream
+      const res = await fetch("/api/audit/start", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
       });
 
-      if (!response.ok) {
-        const err = await response.json();
+      if (!res.ok) {
+        const err = await res.json();
         throw new Error(err.error || "Failed to start audit");
       }
 
-      const reader = response.body?.getReader();
-      if (!reader) throw new Error("No response stream");
+      // Don't await the SSE stream — just poll
+      setMessage("Audit started! Scanning SKUs across AI engines...");
+      pollStatus();
 
-      const decoder = new TextDecoder();
-      let buffer = "";
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split("\n");
-        buffer = lines.pop() || "";
-
-        let currentEvent = "";
-        for (const line of lines) {
-          if (line.startsWith("event: ")) {
-            currentEvent = line.slice(7);
-          } else if (line.startsWith("data: ") && currentEvent) {
-            try {
-              const data = JSON.parse(line.slice(6));
-              const event: AuditEvent = { type: currentEvent, data };
-
-              setEvents((prev) => [...prev, event]);
-
-              if (data.progress !== undefined) {
-                setProgress(data.progress);
-              }
-
-              if (data.auditId) {
-                setAuditId(data.auditId);
-              }
-
-              if (currentEvent === "audit:complete") {
-                setStatus("complete");
-              } else if (currentEvent === "audit:error") {
-                setStatus("error");
-              }
-            } catch {
-              // skip malformed events
-            }
-            currentEvent = "";
-          }
-        }
-      }
     } catch (err) {
-      setStatus("error");
-      setEvents((prev) => [
-        ...prev,
-        {
-          type: "audit:error",
-          data: {
-            auditId: "",
-            message: err instanceof Error ? err.message : "Unknown error",
-          },
-        },
-      ]);
-    }
-  }, []);
-
-  useEffect(() => {
-    startAudit();
-  }, [startAudit]);
-
-  const getEventIcon = (type: string) => {
-    if (type.includes("query")) return <Search className="w-4 h-4" />;
-    if (type.includes("scan")) return <Search className="w-4 h-4" />;
-    if (type.includes("diagnos")) return <Brain className="w-4 h-4" />;
-    if (type.includes("scor")) return <Zap className="w-4 h-4" />;
-    if (type.includes("complete")) return <CheckCircle2 className="w-4 h-4 text-success" />;
-    if (type.includes("error")) return <XCircle className="w-4 h-4 text-error" />;
-    return <Loader2 className="w-4 h-4 animate-spin" />;
-  };
-
-  const getSeverityColor = (severity?: string) => {
-    switch (severity) {
-      case "CRITICAL": return "text-error";
-      case "HIGH": return "text-warning";
-      case "MEDIUM": return "text-info";
-      case "LOW": return "text-text-tertiary";
-      default: return "";
+      console.error("[AuditProgress] Start failed:", err);
+      setMessage(err instanceof Error ? err.message : "Failed to start audit");
+      setIsStarting(false);
     }
   };
+
+  const audit = auditStatus?.audit;
+  const isRunning = isStarting || audit?.status === "SCANNING" || audit?.status === "ANALYZING" || audit?.status === "PENDING";
+  const isComplete = audit?.status === "COMPLETE";
+  const isFailed = audit?.status === "FAILED";
 
   return (
     <div className="space-y-6">
-      {/* Progress bar */}
+      {/* Status card */}
       <div className="bg-bg-secondary border border-border rounded-lg p-6">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-semibold text-text-primary">
-            {status === "idle" && "Preparing audit..."}
-            {status === "running" && "Audit in progress..."}
-            {status === "complete" && "Audit complete!"}
-            {status === "error" && "Audit failed"}
-          </h2>
-          <span className="text-sm text-text-tertiary font-mono">{progress}%</span>
-        </div>
-        <div className="w-full bg-bg-tertiary rounded-full h-3 overflow-hidden">
-          <div
-            className={`h-full rounded-full transition-all duration-500 ${
-              status === "error"
-                ? "bg-error"
-                : status === "complete"
-                  ? "bg-success"
-                  : "bg-accent-primary"
-            }`}
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-      </div>
+        {/* Loading */}
+        {!statusLoaded && (
+          <div className="flex items-center gap-3">
+            <Loader2 className="w-5 h-5 text-text-tertiary animate-spin" />
+            <span className="text-sm text-text-tertiary">Checking audit status...</span>
+          </div>
+        )}
 
-      {/* Event log */}
-      <div className="bg-bg-secondary border border-border rounded-lg p-6">
-        <h3 className="text-sm font-semibold text-text-secondary mb-4 uppercase tracking-wider">
-          Activity Log
-        </h3>
-        <div className="space-y-3 max-h-96 overflow-y-auto">
-          {events.map((event, i) => (
-            <div key={i} className="flex items-start gap-3 text-sm">
-              <span className="mt-0.5 flex-shrink-0">{getEventIcon(event.type)}</span>
-              <div className="min-w-0 flex-1">
-                <p className="text-text-primary">{event.data.message}</p>
-                {event.data.severity && (
-                  <span className={`text-xs font-medium ${getSeverityColor(event.data.severity)}`}>
-                    {event.data.severity}
-                  </span>
-                )}
+        {/* No audit yet — show start button */}
+        {statusLoaded && !isRunning && !isComplete && !isFailed && (
+          <div className="text-center py-4">
+            <p className="text-text-tertiary mb-4">
+              Run an audit to scan your catalog across AI engines and diagnose visibility gaps.
+            </p>
+            <button
+              onClick={startAudit}
+              className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-lg font-medium hover:from-indigo-500 hover:to-violet-500 transition-all"
+            >
+              Start SKU Audit
+            </button>
+          </div>
+        )}
+
+        {/* Running */}
+        {isRunning && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Loader2 className="w-5 h-5 text-accent-primary animate-spin" />
+                <span className="text-sm text-text-secondary">{message}</span>
+              </div>
+              {audit && (
+                <span className="text-xs text-text-tertiary font-mono">
+                  {audit.scanCount} scans
+                </span>
+              )}
+            </div>
+            <div className="w-full bg-bg-tertiary rounded-full h-2">
+              <div
+                className="bg-gradient-to-r from-indigo-500 to-violet-500 h-2 rounded-full transition-all duration-500 animate-pulse"
+                style={{ width: "60%" }}
+              />
+            </div>
+
+            {/* Per-SKU live results */}
+            {audit?.skuProgress && audit.skuProgress.length > 0 && (
+              <div className="space-y-1.5 max-h-48 overflow-y-auto">
+                <p className="text-xs text-text-tertiary uppercase tracking-wider font-semibold">Recent scans</p>
+                {audit.skuProgress.slice(0, 10).map((s, i) => (
+                  <Link
+                    key={i}
+                    href={`/catalog/${s.skuId}`}
+                    className="flex items-center justify-between px-3 py-2 bg-bg-tertiary/30 rounded-lg hover:bg-bg-tertiary/50 transition-colors"
+                  >
+                    <div className="flex items-center gap-2 min-w-0">
+                      {s.visible ? (
+                        <Eye className="w-3.5 h-3.5 text-success flex-shrink-0" />
+                      ) : (
+                        <EyeOff className="w-3.5 h-3.5 text-error flex-shrink-0" />
+                      )}
+                      <span className="text-xs text-text-primary truncate">{s.skuName}</span>
+                    </div>
+                    <span className="text-xs text-text-tertiary flex-shrink-0 ml-2">{s.engine}</span>
+                  </Link>
+                ))}
+              </div>
+            )}
+
+            <p className="text-xs text-text-tertiary text-center">
+              Navigate away freely — audit continues in background.
+            </p>
+          </div>
+        )}
+
+        {/* Complete */}
+        {isComplete && audit && (
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <CheckCircle2 className="w-6 h-6 text-success" />
+              <div>
+                <p className="text-text-primary font-semibold">Audit Complete</p>
+                <p className="text-sm text-text-tertiary">
+                  Agent-Readiness Score: {audit.agentScore ?? 0}/100 &bull; {audit.visibleCount}/{audit.scanCount} visible
+                </p>
               </div>
             </div>
-          ))}
-          {status === "running" && (
-            <div className="flex items-center gap-3 text-sm text-text-tertiary">
-              <Loader2 className="w-4 h-4 animate-spin" />
-              <span>Processing...</span>
+            <div className="flex gap-3">
+              <button
+                onClick={() => router.push(`/audit/${audit.id}`)}
+                className="px-5 py-2 bg-accent-primary text-white rounded-lg text-sm hover:bg-accent-secondary transition-colors font-medium"
+              >
+                View Results
+              </button>
+              <button
+                onClick={startAudit}
+                className="px-5 py-2 bg-bg-tertiary text-text-secondary rounded-lg text-sm hover:bg-bg-secondary transition-colors font-medium"
+              >
+                Run New Audit
+              </button>
             </div>
-          )}
-        </div>
+          </div>
+        )}
+
+        {/* Failed */}
+        {isFailed && (
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <AlertTriangle className="w-6 h-6 text-error" />
+              <div>
+                <p className="text-text-primary font-semibold">Audit Failed</p>
+                <p className="text-sm text-text-tertiary">Something went wrong. Try again.</p>
+              </div>
+            </div>
+            <button
+              onClick={startAudit}
+              className="px-5 py-2 bg-accent-primary text-white rounded-lg text-sm hover:bg-accent-secondary transition-colors font-medium"
+            >
+              Retry Audit
+            </button>
+          </div>
+        )}
       </div>
-
-      {/* Action buttons */}
-      {status === "complete" && auditId && (
-        <div className="flex gap-4">
-          <button
-            onClick={() => router.push(`/audit/${auditId}`)}
-            className="px-6 py-3 bg-accent-primary text-white rounded-lg hover:bg-accent-secondary transition-colors font-medium"
-          >
-            View Results
-          </button>
-          <button
-            onClick={() => router.push("/audit")}
-            className="px-6 py-3 bg-bg-tertiary text-text-secondary rounded-lg hover:bg-bg-secondary transition-colors font-medium"
-          >
-            All Audits
-          </button>
-        </div>
-      )}
-
-      {status === "error" && (
-        <div className="flex gap-4">
-          <button
-            onClick={() => {
-              setStatus("idle");
-              startAudit();
-            }}
-            className="px-6 py-3 bg-accent-primary text-white rounded-lg hover:bg-accent-secondary transition-colors font-medium"
-          >
-            Retry Audit
-          </button>
-          <button
-            onClick={() => router.push("/audit")}
-            className="px-6 py-3 bg-bg-tertiary text-text-secondary rounded-lg hover:bg-bg-secondary transition-colors font-medium"
-          >
-            Back to Audits
-          </button>
-        </div>
-      )}
     </div>
   );
 }

@@ -9,7 +9,7 @@ export async function extractCitations(
   const claude = getClaudeClient();
 
   const message = await claude.messages.create({
-    model: "claude-sonnet-4-5-20241022",
+    model: "claude-sonnet-4-20250514",
     max_tokens: 1024,
     messages: [
       {
@@ -46,7 +46,7 @@ If no citations found, return {"citations": [], "brandPosition": 0}.`,
   try {
     const text = message.content[0].type === "text" ? message.content[0].text : "";
     const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) return { citations: [], totalCitations: 0, brandCitations: 0, competitorCitations: 0, uniqueDomains: [] };
+    if (!jsonMatch) return { citations: [], totalCitations: 0, brandCitations: 0, competitorCitations: 0, uniqueDomains: [], brandPosition: 0 };
 
     const parsed = JSON.parse(jsonMatch[0]);
     const citations = parsed.citations || [];
@@ -56,7 +56,7 @@ If no citations found, return {"citations": [], "brandPosition": 0}.`,
       totalCitations: citations.length,
       brandCitations: citations.filter((c: any) => c.isBrandCitation).length,
       competitorCitations: citations.filter((c: any) => c.isCompetitorCitation).length,
-      uniqueDomains: [...new Set(citations.map((c: any) => c.domain))] as string[],
+      uniqueDomains: Array.from(new Set(citations.map((c: any) => c.domain))) as string[],
       brandPosition: parsed.brandPosition || 0,
     };
   } catch {

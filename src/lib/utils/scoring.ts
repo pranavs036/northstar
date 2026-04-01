@@ -30,3 +30,43 @@ export function calculateAgentReadinessScore(
 
   return Math.max(0, Math.round(100 - normalizedPenalty));
 }
+
+/**
+ * Calculate Agent-Readiness Score from scan results.
+ * Formula: (total brandVisible scans / total scans) * 100
+ */
+export function calculateVisibilityScore(
+  scanResults: Array<{ brandVisible: boolean }>
+): number {
+  if (scanResults.length === 0) return 0;
+  const visibleCount = scanResults.filter((r) => r.brandVisible).length;
+  return Math.round((visibleCount / scanResults.length) * 100);
+}
+
+/**
+ * Calculate per-SKU visibility rate.
+ * Formula: (brandVisible scans for this SKU / total scans for this SKU) * 100
+ * Returns null if no scans exist for the SKU.
+ */
+export function calculateSkuVisibilityRate(
+  scanResults: Array<{ brandVisible: boolean }>
+): number | null {
+  if (scanResults.length === 0) return null;
+  const visibleCount = scanResults.filter((r) => r.brandVisible).length;
+  return visibleCount / scanResults.length;
+}
+
+/**
+ * Calculate the Visibility Rate stat for the dashboard.
+ * Formula: % of SKUs that have at least 1 visible scan result
+ */
+export function calculateCatalogVisibilityRate(
+  skuIds: string[],
+  scanResults: Array<{ sku: string; brandVisible: boolean }>
+): number {
+  if (skuIds.length === 0) return 0;
+  const visibleSkuCount = skuIds.filter((skuId) =>
+    scanResults.some((r) => r.sku === skuId && r.brandVisible)
+  ).length;
+  return (visibleSkuCount / skuIds.length) * 100;
+}

@@ -127,23 +127,23 @@ export async function GET(
     });
 
     // ── 6. Render PDF ─────────────────────────────────────────────────────
-    const pdfBuffer = await renderToBuffer(
-      createElement(AuditReport, {
-        brandName: user.brandName || user.name || "Your Brand",
-        auditDate,
-        agentScore: audit.agentScore ?? 0,
-        visibilityRate,
-        totalSkus: skus.length,
-        engineBreakdown,
-        diagnoses: pdfDiagnoses,
-        sentimentSummary,
-      })
-    );
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const reportElement = createElement(AuditReport, {
+      brandName: user.brandName || user.name || "Your Brand",
+      auditDate,
+      agentScore: audit.agentScore ?? 0,
+      visibilityRate,
+      totalSkus: skus.length,
+      engineBreakdown,
+      diagnoses: pdfDiagnoses,
+      sentimentSummary,
+    }) as any;
+    const pdfBuffer = await renderToBuffer(reportElement);
 
     // ── 7. Return PDF response ────────────────────────────────────────────
     const filename = `northstar-audit-${auditId}.pdf`;
 
-    return new Response(pdfBuffer, {
+    return new Response(new Uint8Array(pdfBuffer), {
       status: 200,
       headers: {
         "Content-Type": "application/pdf",

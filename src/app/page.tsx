@@ -1,776 +1,376 @@
+"use client";
+
 import Link from "next/link";
-import {
-  ArrowRight,
-  Zap,
-  CheckCircle2,
-  Search,
-  Target,
-  TrendingUp,
-  FileText,
-  Star,
-  Upload,
-  ScanLine,
-  ClipboardList,
-  MessageSquare,
-  BarChart3,
-  Calendar,
-  Download,
-} from "lucide-react";
+import { motion, useInView } from "framer-motion";
+import { useRef } from "react";
+
+import LandingHero from "@/components/landing/LandingHero";
+import LandingSection from "@/components/landing/LandingSection";
+import SplitText from "@/components/landing/SplitText";
+import DiagnosisShowcase from "@/components/landing/DiagnosisShowcase";
+import EngineOrbit from "@/components/landing/EngineOrbit";
+import ResultCard from "@/components/landing/ResultCard";
+import MetricsRow from "@/components/landing/MetricsRow";
+import LandingFooter from "@/components/landing/LandingFooter";
+import CustomCursor from "@/components/landing/CustomCursor";
+import ScrollProgress from "@/components/landing/ScrollProgress";
+
+/* ─── Fade-up wrapper for scroll reveals ─── */
+function FadeUp({
+  children,
+  delay = 0,
+  className = "",
+}: {
+  children: React.ReactNode;
+  delay?: number;
+  className?: string;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const isInView = useInView(ref, { once: true, amount: 0.15 });
+  return (
+    <motion.div
+      ref={ref}
+      className={className}
+      initial={{ opacity: 0, y: 40 }}
+      animate={isInView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.6, delay, ease: "easeOut" }}
+    >
+      {children}
+    </motion.div>
+  );
+}
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-[#080810] text-slate-100 overflow-x-hidden">
-      {/* Dot grid background */}
-      <div
-        className="fixed inset-0 pointer-events-none z-0"
-        aria-hidden="true"
-        style={{
-          backgroundImage:
-            "radial-gradient(circle at 1px 1px, rgba(148,163,184,0.05) 1px, transparent 0)",
-          backgroundSize: "36px 36px",
-        }}
-      />
+    <div className="landing-page bg-[#E5E4E0] overflow-x-hidden">
+      <CustomCursor />
+      <ScrollProgress />
 
-      {/* ── NAV ─────────────────────────────────────────────────────────── */}
-      <header className="fixed top-0 left-0 right-0 z-50 border-b border-white/[0.05] bg-[#080810]/80 backdrop-blur-xl">
-        <nav className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link
-            href="/"
-            className="flex items-center gap-2.5 no-underline"
-            style={{ color: "inherit" }}
-          >
-            <div className="w-7 h-7 rounded-md bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-500/25">
-              <Zap className="w-4 h-4 text-white" />
+      {/* ─── SECTION 1: HERO ─── */}
+      <LandingHero />
+
+      {/* ─── SECTION 2: THE URGENCY / FOMO (Dark, Full Width) ─── */}
+      <section className="relative bg-[#1A1A2E] text-[#E5E4E0] overflow-hidden" id="the-shift">
+        <div className="max-w-[1100px] mx-auto px-6 md:px-12 py-24 md:py-36 lg:py-44">
+          <FadeUp>
+            <p className="text-[#FBBF24] text-[18px] tracking-wider mb-10">
+              &#9733;&#9733;&#9733;&#9733;
+            </p>
+          </FadeUp>
+
+          <FadeUp delay={0.1}>
+            <h2 className="text-[clamp(28px,5vw,52px)] leading-[1.1] tracking-[-0.02em] uppercase font-normal max-w-[950px]">
+              Every day your products aren&apos;t optimised for AI search, you&apos;re losing revenue to competitors who are.
+            </h2>
+          </FadeUp>
+
+          <FadeUp delay={0.25}>
+            <div className="w-full h-[1px] bg-[rgba(255,255,255,0.08)] my-12 md:my-16" />
+          </FadeUp>
+
+          <FadeUp delay={0.35}>
+            <p className="text-[clamp(18px,2.5vw,26px)] leading-[1.5] text-[#E5E4E0]/70 max-w-[850px]">
+              Traffic is shifting from Google to ChatGPT, Perplexity, and AI agents — and your SEO strategy doesn&apos;t cover this. AI engines don&apos;t rank links. They <span className="text-[#FBBF24] font-bold">recommend brands</span>. If you&apos;re not in the answer, you don&apos;t exist.
+            </p>
+          </FadeUp>
+
+          <FadeUp delay={0.5}>
+            <p className="text-[clamp(16px,2vw,20px)] leading-[1.5] text-[#E5E4E0]/50 max-w-[750px] mt-8">
+              Your schema markup, content depth, review signals, and structured data determine whether AI cites you or your competitor. NorthStar tells you exactly where you&apos;re losing — and how to fix it.
+            </p>
+          </FadeUp>
+
+          <FadeUp delay={0.6} className="mt-12">
+            <Link
+              href="/demo"
+              className="inline-flex items-center gap-2 text-[14px] font-bold px-7 py-3.5 rounded-[6.25em] border border-[#FBBF24]/30 bg-[#FBBF24]/10 text-[#FBBF24] hover:bg-[#FBBF24]/20 transition-all"
+            >
+              See where you stand <span aria-hidden="true">&rarr;</span>
+            </Link>
+          </FadeUp>
+        </div>
+      </section>
+
+      {/* ─── SECTION 3: HOW IT WORKS — Architecture (Cream) ─── */}
+      <LandingSection variant="cream" id="how-it-works">
+        <div className="mb-16">
+          <SplitText
+            text="HOW IT WORKS"
+            className="text-[clamp(32px,5vw,56px)] leading-[1.05] tracking-[-0.02em] uppercase font-normal"
+            as="h2"
+          />
+          <FadeUp delay={0.2}>
+            <p className="text-[clamp(16px,2vw,20px)] leading-[1.6] text-[#1A1A2E]/60 max-w-[700px] mt-6">
+              NorthStar adds a layer <strong className="text-[#1A1A2E]/80">on top</strong> of your traditional SEO — not replacing it. We reverse-engineer what AI engines actually look at when deciding which products to recommend.
+            </p>
+          </FadeUp>
+        </div>
+
+        {/* Architecture explanation */}
+        <FadeUp delay={0.3}>
+          <div className="rounded-[0.625em] border border-[rgba(111,111,111,0.15)] bg-white/40 p-8 md:p-12 mb-8">
+            <p className="text-[13px] tracking-[0.05em] uppercase text-[#1A1A2E]/40 mb-6">
+              The Technology
+            </p>
+            <p className="text-[clamp(15px,1.5vw,18px)] leading-[1.7] text-[#1A1A2E]/70 max-w-[800px]">
+              We query every major AI engine with real customer search patterns for your products, analyze why competitors get recommended over you, and generate specific fixes for your product pages. Not generic advice — exact changes per SKU, per engine.
+            </p>
+          </div>
+        </FadeUp>
+
+        {/* Flow diagram */}
+        <FadeUp delay={0.4}>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-8">
+            {[
+              {
+                label: "Your Catalog",
+                detail: "Upload your SKUs and competitor domains",
+                icon: (
+                  <svg className="w-8 h-8 mb-4 text-[#4F7DF3]" viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <rect x="4" y="4" width="24" height="24" rx="4" />
+                    <line x1="4" y1="12" x2="28" y2="12" />
+                    <line x1="4" y1="20" x2="28" y2="20" />
+                    <line x1="12" y1="4" x2="12" y2="28" />
+                  </svg>
+                ),
+              },
+              {
+                label: "AI Engine Scanning",
+                detail: "We test your visibility across 5 AI engines",
+                icon: (
+                  <svg className="w-8 h-8 mb-4 text-[#4F7DF3]" viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <circle cx="16" cy="16" r="12" />
+                    <circle cx="16" cy="16" r="6" />
+                    <circle cx="16" cy="16" r="2" fill="currentColor" />
+                    <line x1="16" y1="2" x2="16" y2="6" />
+                    <line x1="16" y1="26" x2="16" y2="30" />
+                    <line x1="2" y1="16" x2="6" y2="16" />
+                    <line x1="26" y1="16" x2="30" y2="16" />
+                  </svg>
+                ),
+              },
+              {
+                label: "Gap Analysis",
+                detail: "AI diagnoses why competitors outrank you",
+                icon: (
+                  <svg className="w-8 h-8 mb-4 text-[#4F7DF3]" viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <path d="M6 24 L6 14" strokeWidth="3" strokeLinecap="round" />
+                    <path d="M13 24 L13 8" strokeWidth="3" strokeLinecap="round" />
+                    <path d="M20 24 L20 16" strokeWidth="3" strokeLinecap="round" />
+                    <path d="M27 24 L27 6" strokeWidth="3" strokeLinecap="round" />
+                  </svg>
+                ),
+              },
+              {
+                label: "Actionable Fixes",
+                detail: "Specific changes per SKU, per engine",
+                icon: (
+                  <svg className="w-8 h-8 mb-4 text-[#34D399]" viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <path d="M6 16 L12 22 L26 8" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                ),
+              },
+            ].map((step, i) => (
+              <div key={step.label} className="relative">
+                <div className="rounded-[0.625em] border border-[rgba(111,111,111,0.15)] bg-[#E5E4E0] p-6 md:p-8 h-full">
+                  {step.icon}
+                  <h3 className="text-[16px] md:text-[18px] uppercase font-bold tracking-[-0.01em] mb-2">
+                    {step.label}
+                  </h3>
+                  <p className="text-[14px] leading-relaxed text-[#1A1A2E]/50">
+                    {step.detail}
+                  </p>
+                </div>
+                {/* Arrow connector (hidden on mobile, hidden on last item) */}
+                {i < 3 && (
+                  <div className="hidden md:flex absolute -right-3 top-1/2 -translate-y-1/2 z-10 text-[#1A1A2E]/20 text-[20px]">
+                    &rarr;
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </FadeUp>
+
+        {/* Engine badges */}
+        <FadeUp delay={0.5}>
+          <div className="rounded-[0.625em] border border-[rgba(111,111,111,0.15)] bg-white/40 p-6 md:p-8">
+            <p className="text-[13px] tracking-[0.05em] uppercase text-[#1A1A2E]/40 mb-5">
+              Engines We Scan
+            </p>
+            <div className="flex flex-wrap gap-3">
+              {["ChatGPT", "Perplexity", "Google AI Overviews", "Gemini", "Microsoft Copilot"].map((engine) => (
+                <span
+                  key={engine}
+                  className="inline-flex items-center px-4 py-2 rounded-full text-[13px] font-bold tracking-[-0.01em] bg-[#1A1A2E]/5 text-[#1A1A2E]/70 border border-[#1A1A2E]/10"
+                >
+                  {engine}
+                </span>
+              ))}
             </div>
-            <span className="text-[15px] font-semibold text-slate-100 tracking-tight">
-              NorthStar
-            </span>
-          </Link>
-
-          <div className="hidden md:flex items-center gap-8 text-sm">
-            <Link
-              href="#how-it-works"
-              className="text-slate-500 hover:text-slate-200 transition-colors duration-200 no-underline"
-              style={{ color: "rgb(100 116 139)" }}
-            >
-              How it works
-            </Link>
-            <Link
-              href="#features"
-              className="text-slate-500 hover:text-slate-200 transition-colors duration-200 no-underline"
-              style={{ color: "rgb(100 116 139)" }}
-            >
-              Features
-            </Link>
-            <Link
-              href="#pricing"
-              className="text-slate-500 hover:text-slate-200 transition-colors duration-200 no-underline"
-              style={{ color: "rgb(100 116 139)" }}
-            >
-              Pricing
-            </Link>
           </div>
+        </FadeUp>
+      </LandingSection>
 
-          <div className="flex items-center gap-3">
-            <Link
-              href="/login"
-              className="hidden sm:block text-sm px-3 py-1.5 transition-colors duration-200 no-underline cursor-pointer"
-              style={{ color: "rgb(100 116 139)" }}
-            >
-              Sign in
-            </Link>
-            <Link
-              href="/signup"
-              className="text-sm font-medium px-4 py-2 rounded-lg bg-gradient-to-r from-indigo-600 to-violet-600 text-white hover:from-indigo-500 hover:to-violet-500 transition-all duration-200 shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/30 no-underline cursor-pointer"
-              style={{ color: "white" }}
-            >
-              Get started
-            </Link>
-          </div>
-        </nav>
-      </header>
+      {/* ─── SECTION 4: THE DIAGNOSIS (Dark) ─── */}
+      <LandingSection variant="dark" id="diagnosis">
+        <SplitText
+          text="EVERY DIAGNOSIS COMES WITH A SPECIFIC FIX"
+          className="text-[clamp(32px,5vw,56px)] leading-[1.05] tracking-[-0.02em] uppercase font-normal mb-16"
+          as="h2"
+        />
+        <DiagnosisShowcase />
+      </LandingSection>
 
-      <main className="relative z-10">
-        {/* ── HERO ────────────────────────────────────────────────────────── */}
-        <section className="relative pt-36 pb-28 px-6 flex flex-col items-center text-center overflow-hidden">
-          {/* Glow orb */}
-          <div
-            className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[500px] pointer-events-none"
-            aria-hidden="true"
-            style={{
-              background:
-                "radial-gradient(ellipse at center top, rgba(99,102,241,0.13) 0%, rgba(139,92,246,0.06) 45%, transparent 70%)",
-            }}
+      {/* ─── SECTION 5: THE ENGINES (Cream) ─── */}
+      <LandingSection variant="cream" id="engines">
+        <SplitText
+          text="WE SCAN FIVE ENGINES"
+          className="text-[clamp(32px,5vw,56px)] leading-[1.05] tracking-[-0.02em] uppercase font-normal text-center"
+          as="h2"
+        />
+        <SplitText
+          text="SO YOU DON'T HAVE TO"
+          className="text-[clamp(32px,5vw,56px)] leading-[1.05] tracking-[-0.02em] uppercase font-normal text-center mt-2 mb-16"
+          delay={0.2}
+          as="h2"
+        />
+
+        <EngineOrbit />
+
+        <FadeUp delay={0.3} className="mt-16 max-w-[480px] mx-auto text-center">
+          <p className="text-[15px] leading-relaxed text-[#1A1A2E]/50">
+            Each engine has different citation signals. What works on Perplexity may not
+            work on ChatGPT. We test all five and diagnose per engine.
+          </p>
+        </FadeUp>
+      </LandingSection>
+
+      {/* ─── SECTION 6: RESULTS / SOCIAL PROOF (Dark) ─── */}
+      <LandingSection variant="dark" id="results">
+        <div className="flex items-baseline justify-between mb-16">
+          <SplitText
+            text="FROM UNCITED TO RECOMMENDED"
+            className="text-[clamp(32px,5vw,56px)] leading-[1.05] tracking-[-0.02em] uppercase font-normal"
+            as="h2"
+          />
+          <span className="hidden md:block text-[13px] tracking-[0.05em] uppercase text-[#E5E4E0]/30">
+            Results
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <ResultCard
+            brand="Brand X"
+            category="Electronics"
+            beforeRate={8}
+            afterRate={52}
+            quote="Added JSON-LD schema across 200 SKUs"
+            delay={0}
+          />
+          <ResultCard
+            brand="Brand Y"
+            category="Furniture"
+            beforeRate={3}
+            afterRate={41}
+            quote="Expanded product descriptions to 600+ words each"
+            delay={0.1}
+          />
+          <ResultCard
+            brand="Brand Z"
+            category="Fashion"
+            beforeRate={15}
+            afterRate={68}
+            quote="Fixed FAQ markup and review schema"
+            delay={0.2}
+          />
+        </div>
+      </LandingSection>
+
+      {/* ─── SECTION 7: METRICS THAT MATTER (Cream) ─── */}
+      <LandingSection variant="cream" id="metrics">
+        <SplitText
+          text="THE METRICS THAT MATTER FOR GEO"
+          className="text-[clamp(32px,5vw,56px)] leading-[1.05] tracking-[-0.02em] uppercase font-normal mb-16"
+          as="h2"
+        />
+
+        <div>
+          {[
+            {
+              index: "01",
+              title: "Agent-Readiness Score",
+              description:
+                "Your catalog's overall readiness for AI engines",
+            },
+            {
+              index: "02",
+              title: "Share of Voice",
+              description:
+                "Your brand's mention rate vs competitors in AI answers",
+            },
+            {
+              index: "03",
+              title: "Citation Rate",
+              description:
+                "How often AI links to your domain specifically",
+            },
+            {
+              index: "04",
+              title: "Engine Breakdown",
+              description:
+                "Visibility per engine — fix the ones you're losing",
+            },
+            {
+              index: "05",
+              title: "Severity Diagnosis",
+              description:
+                "Critical / High / Medium gaps with exact fixes",
+            },
+          ].map((metric, i) => (
+            <MetricsRow
+              key={metric.index}
+              {...metric}
+              delay={i * 0.15}
+            />
+          ))}
+        </div>
+      </LandingSection>
+
+      {/* ─── SECTION 8: BRAND STATEMENT (Gradient) ─── */}
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden animated-gradient bg-gradient-to-br from-[#4F7DF3] via-[#34D399] to-[#FBBF24]">
+        <div className="relative z-10 max-w-[900px] mx-auto px-6 md:px-12 text-center">
+          <SplitText
+            text="PRODUCTS DON'T GET SEARCHED ANYMORE."
+            className="text-[clamp(32px,6vw,72px)] leading-[1.0] tracking-[-0.02em] uppercase font-normal text-white drop-shadow-[0_0_80px_rgba(79,125,243,0.3)]"
+            as="h2"
+          />
+          <SplitText
+            text="THEY GET RECOMMENDED."
+            className="text-[clamp(32px,6vw,72px)] leading-[1.0] tracking-[-0.02em] uppercase font-normal text-white drop-shadow-[0_0_80px_rgba(79,125,243,0.3)] mt-2"
+            delay={0.3}
+            as="h2"
           />
 
-          {/* Badge */}
-          <div className="relative mb-7 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-indigo-500/25 bg-indigo-500/8 text-indigo-300 text-xs font-medium tracking-wide">
-            <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse" />
-            AI Search Optimization for Ecommerce
-          </div>
+          <FadeUp delay={0.6} className="mt-8">
+            <p className="text-[clamp(20px,3vw,32px)] leading-[1.2] uppercase font-normal text-white/80 tracking-[-0.01em]">
+              Make sure AI recommends yours.
+            </p>
+          </FadeUp>
 
-          {/* Headline */}
-          <h1 className="relative max-w-4xl text-5xl md:text-6xl lg:text-[72px] font-bold tracking-[-0.03em] text-slate-50 leading-[1.04] mb-7">
-            Your products are{" "}
-            <span
-              className="bg-clip-text text-transparent"
-              style={{
-                backgroundImage:
-                  "linear-gradient(135deg, #818cf8 0%, #a78bfa 50%, #818cf8 100%)",
-              }}
-            >
-              invisible to AI search.
-            </span>
-            <br />
-            We fix that.
-          </h1>
-
-          {/* Sub-headline */}
-          <p className="relative max-w-xl text-lg text-slate-400 leading-relaxed mb-10">
-            Competitors ranking above you in ChatGPT, Google AI, and Perplexity
-            aren&apos;t luckier — they have better structured data. NorthStar
-            reverse-engineers exactly what they&apos;re doing. Then tells you
-            how to close the gap.
-          </p>
-
-          {/* CTAs */}
-          <div className="relative flex flex-col sm:flex-row items-center gap-4">
+          <FadeUp delay={0.8} className="mt-12">
             <Link
-              href="/signup"
-              className="group flex items-center gap-2 px-6 py-3.5 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 text-white font-semibold text-sm hover:from-indigo-500 hover:to-violet-500 transition-all duration-200 shadow-xl shadow-indigo-500/25 hover:shadow-indigo-500/40 no-underline cursor-pointer"
-              style={{ color: "white" }}
+              href="/demo"
+              className="inline-flex items-center gap-2 text-[14px] font-bold px-8 py-4 rounded-[6.25em] border border-white/20 bg-white text-[#1A1A2E] hover:bg-white/90 transition-all"
             >
-              Start your free audit
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-200" />
+              Run Free Audit <span aria-hidden="true">&rarr;</span>
             </Link>
-            <Link
-              href="#how-it-works"
-              className="flex items-center gap-2 px-6 py-3.5 rounded-xl border border-white/[0.1] text-sm font-medium hover:border-white/[0.18] hover:bg-white/[0.03] transition-all duration-200 no-underline cursor-pointer"
-              style={{ color: "rgb(203 213 225)" }}
-            >
-              See how it works
-            </Link>
-          </div>
-
-          {/* Stats */}
-          <div className="relative mt-20 flex flex-col sm:flex-row items-center justify-center gap-10 sm:gap-16">
-            {[
-              { value: "4 AI engines", label: "scanned per SKU" },
-              { value: "48hr", label: "average audit turnaround" },
-              { value: "SKU-level", label: "diagnosis + fix list" },
-            ].map((stat) => (
-              <div key={stat.label} className="text-center">
-                <div className="text-2xl font-bold text-slate-100 tabular-nums">
-                  {stat.value}
-                </div>
-                <div className="text-sm text-slate-600 mt-1">{stat.label}</div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* ── PROBLEM STATEMENT ────────────────────────────────────────────── */}
-        <section className="py-24 px-6 border-y border-white/[0.05]">
-          <div className="max-w-5xl mx-auto">
-            <p className="text-xs font-semibold tracking-widest text-indigo-400 uppercase mb-4">
-              The AI Search Gap
-            </p>
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-50 tracking-tight leading-tight max-w-3xl mb-6">
-              When a customer asks ChatGPT for the best running shoe, your
-              competitor gets cited.{" "}
-              <span className="text-slate-600">You don&apos;t.</span>
-            </h2>
-            <p className="text-slate-400 text-lg max-w-2xl leading-relaxed mb-16">
-              Search is moving from blue links to AI-generated answers. If your
-              products aren&apos;t cited in those answers, you don&apos;t exist
-              to that buyer. The gap is structural — and fixable.
-            </p>
-
-            {/* Stat tiles */}
-            <div className="grid md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-white/[0.06] border border-white/[0.06] rounded-xl overflow-hidden">
-              {[
-                {
-                  stat: "60%+",
-                  label: "of searches end with no click",
-                  desc: "AI Overviews answer the query directly. Your PDP never gets visited.",
-                },
-                {
-                  stat: "3×",
-                  label: "higher buyer intent",
-                  desc: "Customers who discover products via AI-cited answers convert at significantly higher rates.",
-                },
-                {
-                  stat: "Day 0",
-                  label: "for most ecommerce brands",
-                  desc: "The majority haven't updated their structured data in years. The gap is wide open.",
-                },
-              ].map((item) => (
-                <div key={item.stat} className="bg-[#080810] p-8 md:p-10">
-                  <div className="text-3xl font-bold text-indigo-400 mb-2 tabular-nums">
-                    {item.stat}
-                  </div>
-                  <div className="text-sm font-semibold text-slate-200 mb-3">
-                    {item.label}
-                  </div>
-                  <div className="text-sm text-slate-600 leading-relaxed">
-                    {item.desc}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ── HOW IT WORKS ─────────────────────────────────────────────────── */}
-        <section id="how-it-works" className="py-24 px-6">
-          <div className="max-w-5xl mx-auto">
-            <p className="text-xs font-semibold tracking-widest text-indigo-400 uppercase mb-4">
-              How it works
-            </p>
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-50 tracking-tight mb-4">
-              Three steps. Full picture.
-            </h2>
-            <p className="text-slate-400 mb-16 max-w-md">
-              From catalog upload to actionable diagnosis — in 48 hours, not 4
-              weeks.
-            </p>
-
-            <div className="grid md:grid-cols-3 gap-5">
-              {[
-                {
-                  step: "01",
-                  Icon: Upload,
-                  title: "Upload your catalog",
-                  desc: "Drop in your product CSV or connect your Shopify store. Add 3–5 competitor domains. Takes 5 minutes.",
-                },
-                {
-                  step: "02",
-                  Icon: ScanLine,
-                  title: "We scan every SKU",
-                  desc: "NorthStar queries ChatGPT, Google AI Overviews, Perplexity, and Bing for every product — recording exactly what each engine cites and why.",
-                },
-                {
-                  step: "03",
-                  Icon: ClipboardList,
-                  title: "You get a diagnosis",
-                  desc: "Per-SKU report: exactly why competitors outrank you, what structural data they have that you lack, and a prioritized fix list.",
-                },
-              ].map(({ step, Icon, title, desc }) => (
-                <div
-                  key={step}
-                  className="group p-7 rounded-xl border border-white/[0.07] bg-white/[0.02] hover:border-indigo-500/25 hover:bg-white/[0.035] transition-all duration-300 cursor-default"
-                >
-                  <div className="flex items-start justify-between mb-6">
-                    <div className="w-10 h-10 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center group-hover:bg-indigo-500/15 transition-colors duration-200">
-                      <Icon className="w-5 h-5 text-indigo-400" />
-                    </div>
-                    <span className="text-5xl font-bold tabular-nums select-none text-white/[0.05] group-hover:text-white/[0.08] transition-colors duration-200">
-                      {step}
-                    </span>
-                  </div>
-                  <h3 className="font-semibold text-slate-100 mb-2">{title}</h3>
-                  <p className="text-sm text-slate-500 leading-relaxed">{desc}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ── FEATURES ─────────────────────────────────────────────────────── */}
-        <section
-          id="features"
-          className="py-24 px-6 border-t border-white/[0.05]"
-        >
-          <div className="max-w-5xl mx-auto">
-            <p className="text-xs font-semibold tracking-widest text-indigo-400 uppercase mb-4">
-              Platform
-            </p>
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-50 tracking-tight mb-4">
-              Built for AI-era ecommerce.
-            </h2>
-            <p className="text-slate-400 mb-16 max-w-md">
-              Everything you need to diagnose, fix, and maintain AI search
-              visibility across your entire catalog.
-            </p>
-
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-              {[
-                {
-                  Icon: Search,
-                  title: "5-Engine AI Visibility",
-                  desc: "Track your product visibility across ChatGPT, Perplexity, Google AI Overviews, Gemini, and Copilot.",
-                  tags: ["ChatGPT", "Perplexity", "Google AI", "Gemini", "Copilot"],
-                  iconCls: "text-indigo-400 bg-indigo-500/10 border-indigo-500/20",
-                  tagCls: "text-indigo-300 bg-indigo-500/8 border-indigo-500/20",
-                },
-                {
-                  Icon: Target,
-                  title: "Product Schema Audit",
-                  desc: "Crawl your product pages, analyze structured data completeness, and auto-generate JSON-LD fixes.",
-                  tags: ["JSON-LD", "Schema Markup", "Auto-fix"],
-                  iconCls: "text-violet-400 bg-violet-500/10 border-violet-500/20",
-                  tagCls: "text-violet-300 bg-violet-500/8 border-violet-500/20",
-                },
-                {
-                  Icon: MessageSquare,
-                  title: "Citation & Sentiment Analysis",
-                  desc: "See which sources AI cites, detect citation gaps vs competitors, and track brand sentiment.",
-                  tags: ["Citation Gaps", "Sentiment", "Competitors"],
-                  iconCls: "text-blue-400 bg-blue-500/10 border-blue-500/20",
-                  tagCls: "text-blue-300 bg-blue-500/8 border-blue-500/20",
-                },
-                {
-                  Icon: BarChart3,
-                  title: "Agentic Diagnosis",
-                  desc: "AI-powered analysis tells you exactly why competitors outrank you and generates specific fixes.",
-                  tags: ["AI Analysis", "Fix Generation", "SKU-Level"],
-                  iconCls: "text-amber-400 bg-amber-500/10 border-amber-500/20",
-                  tagCls: "text-amber-300 bg-amber-500/8 border-amber-500/20",
-                },
-                {
-                  Icon: Download,
-                  title: "PDF Audit Reports",
-                  desc: "Download comprehensive audit reports with executive summaries and priority fix lists.",
-                  tags: ["PDF Export", "Executive Summary", "Fix Lists"],
-                  iconCls: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
-                  tagCls: "text-emerald-300 bg-emerald-500/8 border-emerald-500/20",
-                },
-                {
-                  Icon: Calendar,
-                  title: "Scheduled Monitoring",
-                  desc: "Set up daily or weekly re-scans with alerts when visibility drops or competitors gain.",
-                  tags: ["Daily Scans", "Weekly Scans", "Drop Alerts"],
-                  iconCls: "text-rose-400 bg-rose-500/10 border-rose-500/20",
-                  tagCls: "text-rose-300 bg-rose-500/8 border-rose-500/20",
-                },
-              ].map(({ Icon, title, desc, tags, iconCls, tagCls }) => (
-                <div
-                  key={title}
-                  className="group p-7 rounded-xl border border-white/[0.07] bg-white/[0.02] hover:border-white/[0.12] hover:bg-white/[0.035] transition-all duration-300 cursor-default"
-                >
-                  <div
-                    className={`w-10 h-10 rounded-lg border flex items-center justify-center mb-6 ${iconCls}`}
-                  >
-                    <Icon className="w-5 h-5" />
-                  </div>
-                  <h3 className="font-semibold text-slate-100 mb-2">{title}</h3>
-                  <p className="text-sm text-slate-500 leading-relaxed mb-5">
-                    {desc}
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {tags.map((tag) => (
-                      <span
-                        key={tag}
-                        className={`text-xs px-2.5 py-1 rounded-full border ${tagCls}`}
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ── SOCIAL PROOF ──────────────────────────────────────────────────── */}
-        <section className="py-24 px-6 border-t border-white/[0.05]">
-          <div className="max-w-5xl mx-auto">
-            <div className="text-center mb-16">
-              <p className="text-xs font-semibold tracking-widest text-indigo-400 uppercase mb-4">
-                What brands are saying
-              </p>
-              <h2 className="text-3xl md:text-4xl font-bold text-slate-50 tracking-tight">
-                Trusted by ecommerce teams.
-              </h2>
-            </div>
-
-            <div className="grid md:grid-cols-3 gap-5">
-              {[
-                {
-                  quote:
-                    "We had no idea our structured data was years out of date. NorthStar showed us exactly what Allbirds had that we didn't — within 48 hours of upload.",
-                  name: "Sarah K.",
-                  role: "Head of Growth",
-                  company: "DTC Footwear Brand",
-                },
-                {
-                  quote:
-                    "The SKU-level diagnosis is unlike anything else. It's not 'improve your content.' It's 'add FAQ schema and expand material attributes.' Immediately actionable.",
-                  name: "Marcus T.",
-                  role: "VP Ecommerce",
-                  company: "Home Goods Retailer",
-                },
-                {
-                  quote:
-                    "We fixed 12 critical SKUs in two weeks. Three are now cited in Perplexity answers for high-intent queries. This directly moves revenue.",
-                  name: "Priya M.",
-                  role: "Ecommerce Director",
-                  company: "Fashion Brand",
-                },
-              ].map((t) => (
-                <div
-                  key={t.name}
-                  className="p-7 rounded-xl border border-white/[0.07] bg-white/[0.02] flex flex-col"
-                >
-                  <div className="flex gap-0.5 mb-5">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <Star
-                        key={i}
-                        className="w-3.5 h-3.5 text-amber-400 fill-amber-400"
-                      />
-                    ))}
-                  </div>
-                  <p className="text-sm text-slate-300 leading-relaxed mb-6 flex-1">
-                    &ldquo;{t.quote}&rdquo;
-                  </p>
-                  <div className="pt-5 border-t border-white/[0.06]">
-                    <div className="text-sm font-semibold text-slate-100">
-                      {t.name}
-                    </div>
-                    <div className="text-xs text-slate-600 mt-0.5">
-                      {t.role} &middot; {t.company}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ── PRICING ───────────────────────────────────────────────────────── */}
-        <section
-          id="pricing"
-          className="py-24 px-6 border-t border-white/[0.05]"
-        >
-          <div className="max-w-4xl mx-auto">
-            <div className="text-center mb-16">
-              <p className="text-xs font-semibold tracking-widest text-indigo-400 uppercase mb-4">
-                Pricing
-              </p>
-              <h2 className="text-3xl md:text-4xl font-bold text-slate-50 tracking-tight mb-4">
-                Simple, transparent pricing.
-              </h2>
-              <p className="text-slate-400 max-w-sm mx-auto">
-                One-time audit to find the gaps. Monthly maintenance to stay
-                ahead of them.
-              </p>
-            </div>
-
-            <div className="grid md:grid-cols-3 gap-6">
-              {/* Self-Serve */}
-              <div className="p-8 rounded-xl border border-white/[0.08] bg-white/[0.02] flex flex-col">
-                <div className="text-xs font-semibold tracking-widest text-slate-500 uppercase mb-4">
-                  Self-Serve
-                </div>
-                <div className="mb-1">
-                  <span className="text-4xl font-bold text-slate-50 tracking-tight">
-                    $199
-                  </span>
-                  <span className="text-slate-400 text-sm ml-2">/mo</span>
-                </div>
-                <p className="text-sm text-slate-600 mb-8">
-                  Automated scanning &amp; dashboards
-                </p>
-                <ul className="space-y-3.5 mb-10 flex-1">
-                  {[
-                    "Automated scanning",
-                    "Visibility dashboards",
-                    "Basic recommendations",
-                    "CSV/JSON export",
-                    "Email alerts",
-                  ].map((f) => (
-                    <li
-                      key={f}
-                      className="flex items-center gap-3 text-sm text-slate-300"
-                    >
-                      <CheckCircle2 className="w-4 h-4 text-indigo-400 shrink-0" />
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-                <Link
-                  href="/signup"
-                  className="block w-full text-center px-5 py-3 rounded-lg border border-white/[0.1] text-sm font-medium hover:border-indigo-500/35 hover:bg-indigo-500/5 transition-all duration-200 no-underline cursor-pointer"
-                  style={{ color: "rgb(203 213 225)" }}
-                >
-                  Get started
-                </Link>
-              </div>
-
-              {/* Managed Audit */}
-              <div className="p-8 rounded-xl border border-white/[0.08] bg-white/[0.02] flex flex-col">
-                <div className="text-xs font-semibold tracking-widest text-slate-500 uppercase mb-4">
-                  Managed Audit
-                </div>
-                <div className="mb-1">
-                  <span className="text-slate-400 text-sm">From </span>
-                  <span className="text-4xl font-bold text-slate-50 tracking-tight">
-                    $2,000
-                  </span>
-                </div>
-                <p className="text-sm text-slate-600 mb-8">
-                  One-time, based on catalog size
-                </p>
-                <ul className="space-y-3.5 mb-10 flex-1">
-                  {[
-                    "White-glove audit",
-                    "Custom audit report",
-                    "Implementation support",
-                    "Competitor deep-dive",
-                    "Priority fix list",
-                  ].map((f) => (
-                    <li
-                      key={f}
-                      className="flex items-center gap-3 text-sm text-slate-300"
-                    >
-                      <CheckCircle2 className="w-4 h-4 text-indigo-400 shrink-0" />
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-                <Link
-                  href="/signup"
-                  className="block w-full text-center px-5 py-3 rounded-lg border border-white/[0.1] text-sm font-medium hover:border-indigo-500/35 hover:bg-indigo-500/5 transition-all duration-200 no-underline cursor-pointer"
-                  style={{ color: "rgb(203 213 225)" }}
-                >
-                  Request an audit
-                </Link>
-              </div>
-
-              {/* Agentic — highlighted */}
-              <div className="p-8 rounded-xl border border-indigo-500/30 flex flex-col relative overflow-hidden">
-                {/* Subtle gradient fill */}
-                <div
-                  className="absolute inset-0 pointer-events-none rounded-xl"
-                  aria-hidden="true"
-                  style={{
-                    background:
-                      "linear-gradient(160deg, rgba(99,102,241,0.07) 0%, rgba(139,92,246,0.04) 50%, transparent 100%)",
-                  }}
-                />
-                <div className="relative flex flex-col flex-1">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="text-xs font-semibold tracking-widest text-indigo-400 uppercase">
-                      Agentic
-                    </div>
-                    <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-indigo-500/15 text-indigo-300 border border-indigo-500/25">
-                      Recommended
-                    </span>
-                  </div>
-                  <div className="mb-1">
-                    <span className="text-4xl font-bold text-slate-50 tracking-tight">
-                      $499
-                    </span>
-                    <span className="text-slate-400 text-sm ml-2">/mo</span>
-                  </div>
-                  <p className="text-sm text-slate-600 mb-8">
-                    Everything in Self-Serve, plus more
-                  </p>
-                  <ul className="space-y-3.5 mb-10 flex-1">
-                    {[
-                      "Everything in Self-Serve",
-                      "Automated fixes",
-                      "Continuous monitoring",
-                      "Schema auto-generation",
-                      "Priority support",
-                    ].map((f) => (
-                      <li
-                        key={f}
-                        className="flex items-center gap-3 text-sm text-slate-300"
-                      >
-                        <CheckCircle2 className="w-4 h-4 text-indigo-400 shrink-0" />
-                        {f}
-                      </li>
-                    ))}
-                  </ul>
-                  <Link
-                    href="/signup"
-                    className="block w-full text-center px-5 py-3 rounded-lg bg-gradient-to-r from-indigo-600 to-violet-600 text-white text-sm font-semibold hover:from-indigo-500 hover:to-violet-500 transition-all duration-200 shadow-lg shadow-indigo-500/20 no-underline cursor-pointer"
-                    style={{ color: "white" }}
-                  >
-                    Get started
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ── WHY NORTHSTAR ─────────────────────────────────────────────────── */}
-        <section className="py-24 px-6 border-t border-white/[0.05]">
-          <div className="max-w-5xl mx-auto">
-            <div className="text-center mb-16">
-              <p className="text-xs font-semibold tracking-widest text-indigo-400 uppercase mb-4">
-                Why NorthStar
-              </p>
-              <h2 className="text-3xl md:text-4xl font-bold text-slate-50 tracking-tight mb-4">
-                Built for ecommerce. Nothing else comes close.
-              </h2>
-              <p className="text-slate-400 max-w-md mx-auto">
-                Generic AI monitoring tools weren&apos;t built for product catalogs. NorthStar was.
-              </p>
-            </div>
-
-            <div className="rounded-xl border border-white/[0.07] overflow-hidden">
-              {/* Header row */}
-              <div className="grid grid-cols-5 bg-white/[0.03] border-b border-white/[0.07]">
-                <div className="p-5 text-sm font-semibold text-slate-400">Feature</div>
-                <div className="p-5 text-center">
-                  <div className="inline-flex items-center gap-1.5 text-sm font-semibold text-indigo-300">
-                    <Zap className="w-3.5 h-3.5" />
-                    NorthStar
-                  </div>
-                </div>
-                <div className="p-5 text-center text-sm text-slate-500">Profound</div>
-                <div className="p-5 text-center text-sm text-slate-500">Writesonic</div>
-                <div className="p-5 text-center text-sm text-slate-500">Otterly</div>
-              </div>
-
-              {/* Data rows */}
-              {[
-                {
-                  feature: "Engine coverage",
-                  northstar: "5 engines",
-                  profound: "3 engines",
-                  writesonic: "2 engines",
-                  otterly: "3 engines",
-                  highlight: true,
-                },
-                {
-                  feature: "Ecommerce / SKU focus",
-                  northstar: "Native",
-                  profound: "Partial",
-                  writesonic: "No",
-                  otterly: "No",
-                  highlight: true,
-                },
-                {
-                  feature: "Schema audit & auto-fix",
-                  northstar: "Yes",
-                  profound: "No",
-                  writesonic: "No",
-                  otterly: "No",
-                  highlight: true,
-                },
-                {
-                  feature: "Actionable SKU-level fixes",
-                  northstar: "Yes",
-                  profound: "Limited",
-                  writesonic: "No",
-                  otterly: "No",
-                  highlight: true,
-                },
-                {
-                  feature: "Pricing",
-                  northstar: "From $199/mo",
-                  profound: "Enterprise",
-                  writesonic: "From $99/mo",
-                  otterly: "From $49/mo",
-                  highlight: false,
-                },
-              ].map((row, i) => (
-                <div
-                  key={row.feature}
-                  className={`grid grid-cols-5 border-b border-white/[0.05] last:border-0 ${
-                    i % 2 === 0 ? "bg-transparent" : "bg-white/[0.01]"
-                  }`}
-                >
-                  <div className="p-5 text-sm text-slate-400">{row.feature}</div>
-                  <div className="p-5 text-center">
-                    <span
-                      className={`text-sm font-semibold ${
-                        row.highlight ? "text-indigo-300" : "text-slate-200"
-                      }`}
-                    >
-                      {row.northstar}
-                    </span>
-                  </div>
-                  <div className="p-5 text-center text-sm text-slate-600">{row.profound}</div>
-                  <div className="p-5 text-center text-sm text-slate-600">{row.writesonic}</div>
-                  <div className="p-5 text-center text-sm text-slate-600">{row.otterly}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ── FINAL CTA ─────────────────────────────────────────────────────── */}
-        <section className="py-28 px-6 border-t border-white/[0.05]">
-          <div className="max-w-3xl mx-auto text-center relative">
-            <div
-              className="absolute inset-0 pointer-events-none"
-              aria-hidden="true"
-              style={{
-                background:
-                  "radial-gradient(ellipse at center, rgba(99,102,241,0.1) 0%, transparent 65%)",
-              }}
-            />
-            <div className="relative">
-              <p className="text-xs font-semibold tracking-widest text-indigo-400 uppercase mb-5">
-                Get started today
-              </p>
-              <h2 className="text-4xl md:text-5xl lg:text-[56px] font-bold text-slate-50 tracking-tight leading-[1.05] mb-6">
-                Start your AI visibility
-                <br />
-                audit today.
-              </h2>
-              <p className="text-slate-400 text-lg mb-10 max-w-md mx-auto leading-relaxed">
-                See where your catalog stands in AI search — and exactly what it
-                takes to close the gap on your competitors.
-              </p>
-              <Link
-                href="/signup"
-                className="group inline-flex items-center gap-2.5 px-8 py-4 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 text-white font-semibold text-[15px] hover:from-indigo-500 hover:to-violet-500 transition-all duration-200 shadow-2xl shadow-indigo-500/30 hover:shadow-indigo-500/45 no-underline cursor-pointer"
-                style={{ color: "white" }}
-              >
-                Request your audit
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-0.5 transition-transform duration-200" />
-              </Link>
-            </div>
-          </div>
-        </section>
-      </main>
-
-      {/* ── FOOTER ────────────────────────────────────────────────────────── */}
-      <footer className="border-t border-white/[0.05] py-10 px-6">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
-          <Link
-            href="/"
-            className="flex items-center gap-2 no-underline cursor-pointer"
-            style={{ color: "inherit" }}
-          >
-            <div className="w-6 h-6 rounded bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center">
-              <Zap className="w-3.5 h-3.5 text-white" />
-            </div>
-            <span className="text-sm font-semibold text-slate-500 hover:text-slate-300 transition-colors duration-200">
-              NorthStar
-            </span>
-          </Link>
-          <div className="flex items-center gap-6 text-sm">
-            {["Privacy", "Terms"].map((label) => (
-              <Link
-                key={label}
-                href="#"
-                className="no-underline transition-colors duration-200 cursor-pointer"
-                style={{ color: "rgb(71 85 105)" }}
-              >
-                {label}
-              </Link>
-            ))}
-            <Link
-              href="mailto:hello@northstar.ai"
-              className="no-underline transition-colors duration-200 cursor-pointer"
-              style={{ color: "rgb(71 85 105)" }}
-            >
-              Contact
-            </Link>
-          </div>
-          <p className="text-xs" style={{ color: "rgb(51 65 85)" }}>
-            © 2026 NorthStar. Built for AI-era ecommerce.
-          </p>
+          </FadeUp>
         </div>
-      </footer>
+      </section>
+
+      {/* ─── SECTION 9: FOOTER ─── */}
+      <LandingFooter />
     </div>
   );
 }

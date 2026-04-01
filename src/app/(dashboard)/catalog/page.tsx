@@ -33,11 +33,28 @@ export default async function CatalogPage() {
   let diagnoses: DiagnosisRecord[] = [];
 
   if (skuIds.length > 0) {
-    const skuFilter = skuIds.map((id) => `sku="${id}"`).join("||");
-    [scanResults, diagnoses] = await Promise.all([
-      pb.collection("scan_results").getFullList<ScanResultRecord>({ filter: skuFilter }),
-      pb.collection("diagnoses").getFullList<DiagnosisRecord>({ filter: skuFilter }),
-    ]);
+    // Batch SKU IDs to avoid PocketBase filter length limits with large catalogs
+    const BATCH_SIZE = 50;
+    const batches: string[][] = [];
+    for (let i = 0; i < skuIds.length; i += BATCH_SIZE) {
+      batches.push(skuIds.slice(i, i + BATCH_SIZE));
+    }
+
+    const scanBatches = await Promise.all(
+      batches.map((batch) => {
+        const skuFilter = batch.map((id) => `sku="${id}"`).join("||");
+        return pb.collection("scan_results").getFullList<ScanResultRecord>({ filter: skuFilter });
+      })
+    );
+    scanResults = scanBatches.flat();
+
+    const diagBatches = await Promise.all(
+      batches.map((batch) => {
+        const skuFilter = batch.map((id) => `sku="${id}"`).join("||");
+        return pb.collection("diagnoses").getFullList<DiagnosisRecord>({ filter: skuFilter });
+      })
+    );
+    diagnoses = diagBatches.flat();
   }
 
   const skusWithStatus: SkuWithStatus[] = skus.map((sku) => {

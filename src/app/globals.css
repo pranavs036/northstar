@@ -1,7 +1,19 @@
 @import "tailwindcss";
 
 @theme {
-  /* Dark theme color palette */
+  /* NorthStar Landing Design Tokens */
+  --color-ns-cream: #E5E4E0;
+  --color-ns-cream-alt: #F1F0EC;
+  --color-ns-dark: #1A1A2E;
+  --color-ns-dark-alt: #222236;
+  --color-ns-blue: #4F7DF3;
+  --color-ns-green: #34D399;
+  --color-ns-red: #F06B6B;
+  --color-ns-amber: #FBBF24;
+  --color-ns-border: rgba(111, 111, 111, 0.15);
+  --color-ns-text-muted: rgba(26, 26, 46, 0.5);
+
+  /* Legacy tokens (for dashboard pages) */
   --color-bg-primary: #0f172a;
   --color-bg-secondary: #1e293b;
   --color-bg-tertiary: #334155;
@@ -18,36 +30,59 @@
   --color-info: #3b82f6;
 }
 
-* {
-  @apply border-border;
-}
-
 html {
   @apply scroll-smooth;
-  color-scheme: dark;
 }
 
-body {
-  @apply bg-bg-primary text-text-primary;
-  font-feature-settings: "rlig" 1, "calt" 1;
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
-a {
-  @apply transition-colors;
+/* Hide default cursor on landing page (custom cursor replaces it) */
+@media (pointer: fine) {
+  .landing-page {
+    cursor: none;
+  }
+  .landing-page a,
+  .landing-page button {
+    cursor: none;
+  }
 }
 
-button {
-  @apply transition-all duration-200;
+/* Gradient background animation for brand statement section */
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  25% { background-position: 50% 100%; }
+  50% { background-position: 100% 50%; }
+  75% { background-position: 50% 0%; }
+  100% { background-position: 0% 50%; }
 }
 
+.animated-gradient {
+  background-size: 300% 300%;
+  animation: gradient-shift 10s ease infinite;
+}
+
+/* Scrollbar styling for dashboard */
 ::-webkit-scrollbar {
-  @apply w-2 h-2;
+  width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  @apply bg-bg-secondary;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-bg-tertiary rounded hover:bg-text-tertiary;
+  background: rgba(111, 111, 111, 0.2);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(111, 111, 111, 0.4);
 }

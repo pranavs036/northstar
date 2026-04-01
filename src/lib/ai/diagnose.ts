@@ -23,7 +23,7 @@ export async function generateDiagnosis(
   const claude = getClaudeClient();
 
   const response = await claude.messages.create({
-    model: "claude-sonnet-4-5-20241022",
+    model: "claude-sonnet-4-20250514",
     max_tokens: 1024,
     messages: [
       {
