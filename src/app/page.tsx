@@ -7,9 +7,6 @@ import { useRef } from "react";
 import LandingHero from "@/components/landing/LandingHero";
 import LandingSection from "@/components/landing/LandingSection";
 import SplitText from "@/components/landing/SplitText";
-import DiagnosisShowcase from "@/components/landing/DiagnosisShowcase";
-import EngineOrbit from "@/components/landing/EngineOrbit";
-import ResultCard from "@/components/landing/ResultCard";
 import MetricsRow from "@/components/landing/MetricsRow";
 import LandingFooter from "@/components/landing/LandingFooter";
 import CustomCursor from "@/components/landing/CustomCursor";
@@ -48,6 +45,37 @@ export default function LandingPage() {
 
       {/* ─── SECTION 1: HERO ─── */}
       <LandingHero />
+
+      {/* ─── PARTNERSHIPS / SOCIAL PROOF ─── */}
+      <section className="relative bg-[#E5E4E0] py-16 md:py-20 overflow-hidden border-b border-[rgba(111,111,111,0.12)]">
+        <div className="max-w-[1100px] mx-auto px-6 md:px-12">
+          <FadeUp>
+            <p className="text-center text-[13px] tracking-[0.08em] uppercase text-[#1A1A2E]/40 mb-8">
+              Working with leading ecommerce brands
+            </p>
+          </FadeUp>
+          <FadeUp delay={0.15}>
+            <div className="flex items-center justify-center gap-8 md:gap-16 flex-wrap">
+              {[
+                { name: "TataCliq", subtitle: "tatamishop" },
+                { name: "Giveasy.in", subtitle: null },
+                { name: "Peesafe", subtitle: null },
+              ].map((brand) => (
+                <div key={brand.name} className="flex flex-col items-center">
+                  <span className="text-[22px] md:text-[28px] font-bold tracking-[-0.02em] text-[#1A1A2E]/70">
+                    {brand.name}
+                  </span>
+                  {brand.subtitle && (
+                    <span className="text-[11px] tracking-[0.04em] text-[#1A1A2E]/35 mt-0.5">
+                      {brand.subtitle}
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </FadeUp>
+        </div>
+      </section>
 
       {/* ─── SECTION 2: THE URGENCY / FOMO (Dark, Full Width) ─── */}
       <section className="relative bg-[#1A1A2E] text-[#E5E4E0] overflow-hidden" id="the-shift">
@@ -212,82 +240,7 @@ export default function LandingPage() {
         </FadeUp>
       </LandingSection>
 
-      {/* ─── SECTION 4: THE DIAGNOSIS (Dark) ─── */}
-      <LandingSection variant="dark" id="diagnosis">
-        <SplitText
-          text="EVERY DIAGNOSIS COMES WITH A SPECIFIC FIX"
-          className="text-[clamp(32px,5vw,56px)] leading-[1.05] tracking-[-0.02em] uppercase font-normal mb-16"
-          as="h2"
-        />
-        <DiagnosisShowcase />
-      </LandingSection>
-
-      {/* ─── SECTION 5: THE ENGINES (Cream) ─── */}
-      <LandingSection variant="cream" id="engines">
-        <SplitText
-          text="WE SCAN FIVE ENGINES"
-          className="text-[clamp(32px,5vw,56px)] leading-[1.05] tracking-[-0.02em] uppercase font-normal text-center"
-          as="h2"
-        />
-        <SplitText
-          text="SO YOU DON'T HAVE TO"
-          className="text-[clamp(32px,5vw,56px)] leading-[1.05] tracking-[-0.02em] uppercase font-normal text-center mt-2 mb-16"
-          delay={0.2}
-          as="h2"
-        />
-
-        <EngineOrbit />
-
-        <FadeUp delay={0.3} className="mt-16 max-w-[480px] mx-auto text-center">
-          <p className="text-[15px] leading-relaxed text-[#1A1A2E]/50">
-            Each engine has different citation signals. What works on Perplexity may not
-            work on ChatGPT. We test all five and diagnose per engine.
-          </p>
-        </FadeUp>
-      </LandingSection>
-
-      {/* ─── SECTION 6: RESULTS / SOCIAL PROOF (Dark) ─── */}
-      <LandingSection variant="dark" id="results">
-        <div className="flex items-baseline justify-between mb-16">
-          <SplitText
-            text="FROM UNCITED TO RECOMMENDED"
-            className="text-[clamp(32px,5vw,56px)] leading-[1.05] tracking-[-0.02em] uppercase font-normal"
-            as="h2"
-          />
-          <span className="hidden md:block text-[13px] tracking-[0.05em] uppercase text-[#E5E4E0]/30">
-            Results
-          </span>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <ResultCard
-            brand="Brand X"
-            category="Electronics"
-            beforeRate={8}
-            afterRate={52}
-            quote="Added JSON-LD schema across 200 SKUs"
-            delay={0}
-          />
-          <ResultCard
-            brand="Brand Y"
-            category="Furniture"
-            beforeRate={3}
-            afterRate={41}
-            quote="Expanded product descriptions to 600+ words each"
-            delay={0.1}
-          />
-          <ResultCard
-            brand="Brand Z"
-            category="Fashion"
-            beforeRate={15}
-            afterRate={68}
-            quote="Fixed FAQ markup and review schema"
-            delay={0.2}
-          />
-        </div>
-      </LandingSection>
-
-      {/* ─── SECTION 7: METRICS THAT MATTER (Cream) ─── */}
+      {/* ─── SECTION 4: METRICS THAT MATTER (Cream) ─── */}
       <LandingSection variant="cream" id="metrics">
         <SplitText
           text="THE METRICS THAT MATTER FOR GEO"

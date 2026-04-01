@@ -27,6 +27,17 @@ interface TierScore {
   visible: number;
 }
 
+interface SkuAudit {
+  sku: string;
+  name: string;
+  category: string;
+  visibilityScore: number;
+  enginesVisible: number;
+  totalEngines: number;
+  topIssue: string;
+  severity: "CRITICAL" | "HIGH" | "MEDIUM";
+}
+
 interface DemoResults {
   brandName: string;
   domain: string;
@@ -35,6 +46,7 @@ interface DemoResults {
   tiers: TierScore[];
   topGaps: { gap: string; severity: string; fix: string }[];
   competitorLeaders: { name: string; score: number }[];
+  skuCatalog: SkuAudit[];
 }
 
 /* ────────────────────────────────────────────────────────────
@@ -129,6 +141,58 @@ function generateMockResults(brandName: string, domain: string): DemoResults {
     { name: "Competitor C", score: Math.floor(Math.random() * 20) + 35 },
   ];
 
+  // Generate realistic SKU catalog based on brand name
+  const skuTemplates = [
+    { prefix: "Classic", categories: ["Essentials", "Core Range"] },
+    { prefix: "Premium", categories: ["Luxury", "Premium Range"] },
+    { prefix: "Ultra", categories: ["Performance", "Pro Range"] },
+    { prefix: "Essential", categories: ["Daily Use", "Basics"] },
+    { prefix: "Pro", categories: ["Professional", "Advanced"] },
+    { prefix: "Signature", categories: ["Exclusive", "Signature Line"] },
+    { prefix: "Original", categories: ["Heritage", "Classic"] },
+    { prefix: "Advanced", categories: ["Innovation", "Tech"] },
+    { prefix: "Natural", categories: ["Organic", "Clean"] },
+    { prefix: "Elite", categories: ["Premium", "Select"] },
+    { prefix: "Max", categories: ["Performance", "Sport"] },
+    { prefix: "Comfort", categories: ["Everyday", "Home"] },
+    { prefix: "Fresh", categories: ["New Arrivals", "Seasonal"] },
+    { prefix: "Active", categories: ["Sports", "Fitness"] },
+    { prefix: "Slim", categories: ["Compact", "Travel"] },
+    { prefix: "Power", categories: ["Heavy Duty", "Industrial"] },
+    { prefix: "Smart", categories: ["Connected", "Tech"] },
+    { prefix: "Eco", categories: ["Sustainable", "Green"] },
+    { prefix: "Lite", categories: ["Budget", "Value"] },
+    { prefix: "Rapid", categories: ["Fast", "Express"] },
+  ];
+
+  const skuIssues = [
+    { issue: "Missing JSON-LD Product schema", severity: "CRITICAL" as const },
+    { issue: "No FAQ markup on product page", severity: "HIGH" as const },
+    { issue: "Thin product description (<150 words)", severity: "CRITICAL" as const },
+    { issue: "Missing AggregateRating schema", severity: "HIGH" as const },
+    { issue: "No review markup detected", severity: "HIGH" as const },
+    { issue: "Brand name absent from meta description", severity: "MEDIUM" as const },
+    { issue: "Missing product image alt text", severity: "MEDIUM" as const },
+    { issue: "No BreadcrumbList schema", severity: "MEDIUM" as const },
+    { issue: "Incomplete product attributes", severity: "HIGH" as const },
+    { issue: "Missing comparison content", severity: "MEDIUM" as const },
+  ];
+
+  const skuCatalog: SkuAudit[] = skuTemplates.map((tmpl, i) => {
+    const issueIdx = i % skuIssues.length;
+    const enginesVis = Math.floor(Math.random() * 3);
+    return {
+      sku: `${brandName.substring(0, 3).toUpperCase()}-${String(1001 + i)}`,
+      name: `${brandName} ${tmpl.prefix} ${["Series", "Edition", "Collection", "Range", "Line"][i % 5]}`,
+      category: tmpl.categories[Math.floor(Math.random() * tmpl.categories.length)],
+      visibilityScore: Math.floor(Math.random() * 40) + 5,
+      enginesVisible: enginesVis,
+      totalEngines: 5,
+      topIssue: skuIssues[issueIdx].issue,
+      severity: skuIssues[issueIdx].severity,
+    };
+  });
+
   return {
     brandName,
     domain,
@@ -137,6 +201,7 @@ function generateMockResults(brandName: string, domain: string): DemoResults {
     tiers,
     topGaps,
     competitorLeaders,
+    skuCatalog,
   };
 }
 
@@ -269,12 +334,12 @@ function ResultsView({ results, onReset }: { results: DemoResults; onReset: () =
             >
               New Audit
             </button>
-            <Link
-              href="/signup"
+            <a
+              href="mailto:pranavs036@gmail.com"
               className="text-[13px] font-bold px-5 py-2 rounded-full bg-[#4F7DF3] text-white hover:bg-[#4F7DF3]/90 transition-colors"
             >
               Get Full Audit
-            </Link>
+            </a>
           </div>
         </nav>
       </header>
@@ -364,6 +429,77 @@ function ResultsView({ results, onReset }: { results: DemoResults; onReset: () =
                   <p className="text-xs text-white/60 font-medium">
                     {e.competitor} (#{e.competitorPosition})
                   </p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* SKU Catalog Audit */}
+      <section className="py-16 border-b border-white/5">
+        <div className="max-w-[1200px] mx-auto px-6 md:px-12">
+          <div className="flex items-baseline justify-between mb-2">
+            <h2 className="text-xl font-bold">Catalog SKU Audit</h2>
+            <span className="text-xs text-white/30">{results.skuCatalog.length} SKUs scanned</span>
+          </div>
+          <p className="text-sm text-white/40 mb-8">
+            Per-SKU visibility scores and top issues across all AI engines.
+          </p>
+
+          {/* Table header */}
+          <div className="hidden md:grid grid-cols-12 gap-3 px-5 py-3 text-[11px] uppercase tracking-wider text-white/30 border-b border-white/5">
+            <div className="col-span-1">SKU</div>
+            <div className="col-span-3">Product Name</div>
+            <div className="col-span-2">Category</div>
+            <div className="col-span-1 text-center">Score</div>
+            <div className="col-span-1 text-center">Engines</div>
+            <div className="col-span-3">Top Issue</div>
+            <div className="col-span-1 text-center">Severity</div>
+          </div>
+
+          {/* SKU rows */}
+          <div className="space-y-1 max-h-[600px] overflow-y-auto">
+            {results.skuCatalog.map((sku, i) => (
+              <motion.div
+                key={sku.sku}
+                className="grid grid-cols-1 md:grid-cols-12 gap-2 md:gap-3 px-5 py-4 rounded-lg bg-white/[0.02] border border-white/[0.03] hover:bg-white/[0.04] transition-colors"
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: Math.min(0.03 * i, 0.6), duration: 0.3 }}
+              >
+                <div className="md:col-span-1 text-xs font-mono text-white/40">{sku.sku}</div>
+                <div className="md:col-span-3 text-sm font-medium text-white/80 truncate">{sku.name}</div>
+                <div className="md:col-span-2 text-xs text-white/40">{sku.category}</div>
+                <div className="md:col-span-1 text-center">
+                  <span
+                    className={`text-sm font-bold ${
+                      sku.visibilityScore >= 40
+                        ? "text-green-400"
+                        : sku.visibilityScore >= 20
+                        ? "text-amber-400"
+                        : "text-red-400"
+                    }`}
+                  >
+                    {sku.visibilityScore}
+                  </span>
+                </div>
+                <div className="md:col-span-1 text-center text-xs text-white/50">
+                  {sku.enginesVisible}/{sku.totalEngines}
+                </div>
+                <div className="md:col-span-3 text-xs text-white/40 truncate">{sku.topIssue}</div>
+                <div className="md:col-span-1 text-center">
+                  <span
+                    className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${
+                      sku.severity === "CRITICAL"
+                        ? "bg-red-500/10 text-red-400 border border-red-500/20"
+                        : sku.severity === "HIGH"
+                        ? "bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                        : "bg-blue-500/10 text-blue-400 border border-blue-500/20"
+                    }`}
+                  >
+                    {sku.severity}
+                  </span>
                 </div>
               </motion.div>
             ))}
@@ -527,12 +663,12 @@ function ResultsView({ results, onReset }: { results: DemoResults; onReset: () =
               The full NorthStar audit scans every SKU in your catalog, diagnoses competitor advantages, and delivers actionable fixes per product per engine.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link
-                href="/signup"
+              <a
+                href="mailto:pranavs036@gmail.com"
                 className="inline-flex items-center gap-2 text-[14px] font-bold px-8 py-4 rounded-full bg-gradient-to-r from-[#4F7DF3] to-[#34D399] text-white hover:opacity-90 transition-opacity"
               >
                 Start Full Audit <span aria-hidden="true">&rarr;</span>
-              </Link>
+              </a>
               <button
                 onClick={onReset}
                 className="inline-flex items-center gap-2 text-[14px] font-bold px-8 py-4 rounded-full border border-white/10 text-white/60 hover:text-white hover:border-white/20 transition-all"
@@ -579,12 +715,12 @@ function FormView({ onSubmit }: { onSubmit: (data: { brandName: string; websiteU
           <Link href="/" className="text-[13px] font-bold tracking-[0.05em] uppercase text-white/70 hover:text-white transition-colors">
             NorthStar
           </Link>
-          <Link
-            href="/login"
+          <a
+            href="mailto:pranavs036@gmail.com"
             className="text-[13px] text-white/50 hover:text-white transition-colors"
           >
-            Login
-          </Link>
+            Contact Us
+          </a>
         </nav>
       </header>
 
