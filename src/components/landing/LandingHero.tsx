@@ -134,6 +134,12 @@ export default function LandingHero() {
             >
               Get Demo <span aria-hidden="true">&rarr;</span>
             </Link>
+            <Link
+              href="/login"
+              className="hidden md:flex text-[13px] font-bold items-center gap-2 px-5 py-2.5 text-[#1A1A2E]/70 hover:text-[#1A1A2E] transition-colors"
+            >
+              Login
+            </Link>
             {/* Mobile menu button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}

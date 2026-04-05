@@ -660,6 +660,74 @@ function ResultsView({ results, onReset }: { results: DemoResults; onReset: () =
         </div>
       </section>
 
+      {/* SKU-Level Actionables */}
+      <section className="py-16 border-b border-white/5">
+        <div className="max-w-[1200px] mx-auto px-6 md:px-12">
+          <div className="flex items-center gap-3 mb-2">
+            <h2 className="text-xl font-bold">SKU-Level Actionables</h2>
+            <span className="text-[10px] font-bold tracking-wider uppercase px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+              Differentiator
+            </span>
+          </div>
+          <p className="text-sm text-white/40 mb-8">
+            Not generic advice. Exact changes per product page, per engine.
+          </p>
+          <div className="space-y-4">
+            {(results.skuCatalog || []).slice(0, 3).map((sku, i) => (
+              <motion.div
+                key={i}
+                className="rounded-xl border border-white/5 bg-white/[0.02] p-6"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 * i, duration: 0.4 }}
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 className="text-sm font-semibold text-white/90">{sku.name}</h3>
+                    <p className="text-[12px] text-white/30 mt-0.5">{sku.category}</p>
+                  </div>
+                  <span className={`text-[10px] font-bold tracking-wider uppercase px-2.5 py-1 rounded-full ${
+                    sku.severity === "CRITICAL"
+                      ? "bg-red-500/10 text-red-400 border border-red-500/20"
+                      : sku.severity === "HIGH"
+                      ? "bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                      : "bg-blue-500/10 text-blue-400 border border-blue-500/20"
+                  }`}>{sku.severity}</span>
+                </div>
+                <div className="space-y-3">
+                  {[
+                    { action: `Add Product FAQ schema with 3-5 questions customers commonly ask about this ${sku.category.toLowerCase()}`, type: "Schema" },
+                    { action: `Expand product description from ~40 words to 200+ words with comparison tables and use-case scenarios`, type: "Content" },
+                    { action: `Add structured review markup (JSON-LD). Competitor has 40+ reviews in schema, you have 0 visible to AI engines`, type: "Reviews" },
+                  ].map((item, j) => (
+                    <div key={j} className="flex items-start gap-3 pl-1">
+                      <span className="flex-shrink-0 mt-1.5 w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                      <div>
+                        <span className="text-[10px] font-bold tracking-wider uppercase text-emerald-400/60 mr-2">{item.type}</span>
+                        <span className="text-[13px] text-white/50 leading-relaxed">{item.action}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+            ))}
+            {/* Paywall hint for remaining SKUs */}
+            <div className="rounded-xl border border-white/5 bg-white/[0.02] p-6 relative overflow-hidden">
+              <div className="absolute inset-0 backdrop-blur-[4px] bg-[#0f1117]/60 flex items-center justify-center z-10">
+                <div className="text-center">
+                  <p className="text-sm font-semibold text-white/70 mb-1">Actionables for {(results.skuCatalog || []).length - 3} more SKUs</p>
+                  <p className="text-[12px] text-white/30">Available in full audit</p>
+                </div>
+              </div>
+              <div className="opacity-30">
+                <h3 className="text-sm font-semibold text-white/90 mb-3">Remaining Products</h3>
+                <div className="h-20" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Competitor Comparison */}
       <section className="py-16 border-b border-white/5">
         <div className="max-w-[1200px] mx-auto px-6 md:px-12">
