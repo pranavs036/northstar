@@ -17,6 +17,14 @@ export const CatalogUploadSchema = z.object({
 
 export type CatalogUpload = z.infer<typeof CatalogUploadSchema>;
 
+export interface Actionable {
+  id: string;
+  title: string;
+  description: string;
+  severity: "CRITICAL" | "HIGH" | "MEDIUM";
+  category: "schema" | "content" | "structured_data" | "reviews" | "comparison";
+}
+
 export interface SkuWithStatus {
   id: string;
   skuCode: string;
@@ -27,4 +35,5 @@ export interface SkuWithStatus {
   scanCount: number;
   visibilityRate: number | null;
   worstSeverity: "CRITICAL" | "HIGH" | "MEDIUM" | "LOW" | null;
+  actionablesCount: number;
 }

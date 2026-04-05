@@ -6,6 +6,7 @@ export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { SkuTable } from "@/components/dashboard/SkuTable";
 import type { SkuWithStatus } from "@/types/catalog";
+import { generateActionables } from "@/lib/utils/actionables";
 import type { SkuRecord, ScanResultRecord, DiagnosisRecord } from "@/types/pocketbase";
 
 export default async function CatalogPage() {
@@ -74,6 +75,8 @@ export default async function CatalogPage() {
           ).severity
         : null;
 
+    const actionables = generateActionables(sku, skuDiags);
+
     return {
       id: sku.id,
       skuCode: sku.skuCode,
@@ -84,6 +87,7 @@ export default async function CatalogPage() {
       scanCount,
       visibilityRate,
       worstSeverity,
+      actionablesCount: actionables.length,
     };
   });
 

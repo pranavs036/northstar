@@ -1,8 +1,9 @@
 import { createServerClient } from "@/lib/pocketbase/server";
 import { redirect } from "next/navigation";
-import { ArrowLeft, ExternalLink, Tag, Globe, AlertTriangle, CheckCircle2, XCircle, Minus } from "lucide-react";
+import { ArrowLeft, ExternalLink, Tag, Globe, AlertTriangle, CheckCircle2, XCircle, Minus, Zap, CircleAlert, ArrowUpCircle, Info } from "lucide-react";
 import Link from "next/link";
 import { DiagnosisCard } from "@/components/audit/DiagnosisCard";
+import { generateActionables } from "@/lib/utils/actionables";
 import type { SkuRecord, ScanResultRecord, DiagnosisRecord } from "@/types/pocketbase";
 
 export const dynamic = "force-dynamic";
@@ -214,6 +215,85 @@ export default async function SkuDeepDivePage({
         </div>
       </div>
       )}
+
+      {/* Actionables Section */}
+      {(() => {
+        const actionables = generateActionables(sku, diagnoses);
+        const criticalActions = actionables.filter((a) => a.severity === "CRITICAL");
+        const highActions = actionables.filter((a) => a.severity === "HIGH");
+        const mediumActions = actionables.filter((a) => a.severity === "MEDIUM");
+
+        const severityIcon = (severity: string) => {
+          if (severity === "CRITICAL") return <CircleAlert className="w-4 h-4 text-error flex-shrink-0" />;
+          if (severity === "HIGH") return <ArrowUpCircle className="w-4 h-4 text-warning flex-shrink-0" />;
+          return <Info className="w-4 h-4 text-blue-400 flex-shrink-0" />;
+        };
+
+        const severityBadge = (severity: string) => {
+          if (severity === "CRITICAL") return "bg-error/15 text-error border-error/30";
+          if (severity === "HIGH") return "bg-warning/15 text-warning border-warning/30";
+          return "bg-blue-500/15 text-blue-400 border-blue-500/30";
+        };
+
+        return actionables.length > 0 ? (
+          <div>
+            <div className="flex items-center gap-3 mb-4">
+              <Zap className="w-6 h-6 text-accent-primary" />
+              <h2 className="text-2xl font-bold text-text-primary">
+                Actionables ({actionables.length})
+              </h2>
+              <div className="flex gap-2 ml-auto">
+                {criticalActions.length > 0 && (
+                  <span className="text-xs px-2 py-1 rounded-full bg-error/15 text-error border border-error/30">
+                    {criticalActions.length} Critical
+                  </span>
+                )}
+                {highActions.length > 0 && (
+                  <span className="text-xs px-2 py-1 rounded-full bg-warning/15 text-warning border border-warning/30">
+                    {highActions.length} High
+                  </span>
+                )}
+                {mediumActions.length > 0 && (
+                  <span className="text-xs px-2 py-1 rounded-full bg-blue-500/15 text-blue-400 border border-blue-500/30">
+                    {mediumActions.length} Medium
+                  </span>
+                )}
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              {actionables.map((action) => (
+                <div
+                  key={action.id}
+                  className="bg-bg-secondary border border-border rounded-lg p-4 hover:bg-bg-tertiary/30 transition-colors"
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="mt-0.5">
+                      {severityIcon(action.severity)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="text-sm font-semibold text-text-primary">
+                          {action.title}
+                        </h3>
+                        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${severityBadge(action.severity)}`}>
+                          {action.severity}
+                        </span>
+                      </div>
+                      <p className="text-xs text-text-tertiary leading-relaxed">
+                        {action.description}
+                      </p>
+                    </div>
+                    <div className="flex-shrink-0">
+                      <div className="w-5 h-5 rounded border-2 border-border bg-bg-tertiary" />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : null;
+      })()}
 
       {/* Engine visibility breakdown */}
       {engineStats.length > 0 && (

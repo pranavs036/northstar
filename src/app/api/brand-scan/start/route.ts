@@ -176,7 +176,7 @@ export async function POST(request: NextRequest) {
 
       send("brand-scan:progress", {
         scanId,
-        message: `Generated ${totalQueries} brand queries across 5 tiers`,
+        message: `Generated ${totalQueries} brand queries across 4 tiers`,
         progress: 10,
       });
 
@@ -285,12 +285,11 @@ export async function POST(request: NextRequest) {
         progress: 92,
       });
 
-      const tiers: Array<"awareness" | "category" | "intent" | "competitor" | "thought_leadership"> = [
-        "awareness",
+      const tiers: Array<"hero_sku" | "category" | "purchase_intent" | "competitor"> = [
+        "hero_sku",
         "category",
-        "intent",
+        "purchase_intent",
         "competitor",
-        "thought_leadership",
       ];
 
       const tierScores: TierScores = {} as TierScores;
@@ -332,11 +331,10 @@ export async function POST(request: NextRequest) {
 
       // Overall score (weighted)
       const weights = {
-        awareness: 0.15,
-        category: 0.30,
-        intent: 0.25,
-        competitor: 0.15,
-        thought_leadership: 0.15,
+        hero_sku: 0.25,
+        category: 0.25,
+        purchase_intent: 0.25,
+        competitor: 0.25,
       };
 
       let visibilityScore = 0;

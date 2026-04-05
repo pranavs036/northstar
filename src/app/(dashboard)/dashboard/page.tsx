@@ -155,11 +155,11 @@ export default async function DashboardPage() {
               <h3 className="font-semibold text-text-primary text-sm">SKU Analysis</h3>
               <span className="text-xs text-text-tertiary">{totalSkus} products</span>
             </div>
-            <Link href="/catalog" className="text-xs text-accent-primary hover:text-accent-secondary flex items-center gap-1">
-              Catalog <ChevronRight className="w-3 h-3" />
+            <Link href="/catalog/analysis" className="text-xs text-accent-primary hover:text-accent-secondary flex items-center gap-1">
+              Analysis <ChevronRight className="w-3 h-3" />
             </Link>
           </div>
-          <SkuAnalysisCard totalSkus={totalSkus} />
+          <SkuAnalysisCard totalSkus={totalSkus} linkTo="/catalog/analysis" />
         </div>
 
         {/* Card 3: Agent Readiness */}

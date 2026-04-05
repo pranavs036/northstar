@@ -38,18 +38,23 @@ interface ScanStatus {
 }
 
 const TIER_LABELS: Record<string, string> = {
-  awareness: "Brand Awareness",
+  hero_sku: "Hero SKU Queries",
   category: "Category Ownership",
+  purchase_intent: "Purchase Intent",
+  competitor: "Competitor Battles",
+  // Legacy labels
+  awareness: "Brand Awareness",
   intent: "Intent Matching",
-  competitor: "Competitive Battle",
   thought_leadership: "Thought Leadership",
 };
 
 const TIER_DESCRIPTIONS: Record<string, string> = {
-  awareness: "Do AI engines know your brand?",
+  hero_sku: "Are your best products found for top queries?",
   category: "Do you own your category in AI search?",
+  purchase_intent: "Are you recommended when people are ready to buy?",
+  competitor: "How do you stack up in head-to-head comparisons?",
+  awareness: "Do AI engines know your brand?",
   intent: "Are you recommended for customer needs?",
-  competitor: "How do you compare vs competitors?",
   thought_leadership: "Do you appear in industry conversations?",
 };
 
@@ -347,7 +352,7 @@ export function BrandScanWidget({ brandName, brandDomain, brandDescription, cate
               {/* Compact Tier Breakdown — skip thought_leadership */}
               <div className="space-y-2">
                 {Object.entries(tierScores)
-                  .filter(([tier]) => tier !== "thought_leadership")
+                  .filter(([tier]) => tier !== "thought_leadership" && tier !== "awareness" && tier !== "intent")
                   .map(([tier, scores]) => (
                   <div key={tier} className="flex items-center gap-2 text-xs">
                     <span className="text-text-tertiary w-24 flex-shrink-0 truncate">

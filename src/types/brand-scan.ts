@@ -24,7 +24,7 @@ export interface CompetitorPosition {
 
 export interface BrandScanResult {
   query: string;
-  tier: "awareness" | "category" | "intent" | "competitor" | "thought_leadership";
+  tier: "hero_sku" | "category" | "purchase_intent" | "competitor" | "awareness" | "intent" | "thought_leadership";
   intent: string;
   engine: string;
   brandVisible: boolean;
@@ -37,11 +37,14 @@ export interface BrandScanResult {
 }
 
 export interface TierScores {
-  awareness: TierScore;
+  hero_sku: TierScore;
   category: TierScore;
-  intent: TierScore;
+  purchase_intent: TierScore;
   competitor: TierScore;
-  thought_leadership: TierScore;
+  // Legacy tiers kept for backward compat with old scan data
+  awareness?: TierScore;
+  intent?: TierScore;
+  thought_leadership?: TierScore;
 }
 
 export interface TierScore {

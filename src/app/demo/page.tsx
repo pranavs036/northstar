@@ -1069,11 +1069,10 @@ function FormView({ onSubmit }: { onSubmit: (data: { brandName: string; websiteU
 const SCAN_MESSAGES = [
   "Connecting to Claude AI...",
   "Generating brand visibility queries...",
-  "Querying brand awareness...",
-  "Scanning category queries...",
+  "Testing hero SKU queries...",
+  "Scanning category ownership...",
   "Testing purchase intent queries...",
-  "Checking competitor comparison queries...",
-  "Analyzing thought leadership presence...",
+  "Running competitor battle queries...",
   "Calculating visibility scores...",
   "Preparing your report...",
 ];
@@ -1217,11 +1216,10 @@ export default function DemoPage() {
 
       const tierScores = apiData.tierScores;
       const tiers: TierScore[] = [
-        { tier: "awareness", label: "Brand Awareness", score: tierScores.awareness?.score || 0, total: tierScores.awareness?.total || 0, visible: tierScores.awareness?.visible || 0 },
-        { tier: "category", label: "Category Queries", score: tierScores.category?.score || 0, total: tierScores.category?.total || 0, visible: tierScores.category?.visible || 0 },
-        { tier: "intent", label: "Purchase Intent", score: tierScores.intent?.score || 0, total: tierScores.intent?.total || 0, visible: tierScores.intent?.visible || 0 },
-        { tier: "competitor", label: "Competitor Queries", score: tierScores.competitor?.score || 0, total: tierScores.competitor?.total || 0, visible: tierScores.competitor?.visible || 0 },
-        { tier: "thought_leadership", label: "Thought Leadership", score: tierScores.thought_leadership?.score || 0, total: tierScores.thought_leadership?.total || 0, visible: tierScores.thought_leadership?.visible || 0 },
+        { tier: "hero_sku", label: "Hero SKU Queries", score: tierScores.hero_sku?.score || tierScores.awareness?.score || 0, total: tierScores.hero_sku?.total || tierScores.awareness?.total || 0, visible: tierScores.hero_sku?.visible || tierScores.awareness?.visible || 0 },
+        { tier: "category", label: "Category Ownership", score: tierScores.category?.score || 0, total: tierScores.category?.total || 0, visible: tierScores.category?.visible || 0 },
+        { tier: "purchase_intent", label: "Purchase Intent", score: tierScores.purchase_intent?.score || tierScores.intent?.score || 0, total: tierScores.purchase_intent?.total || tierScores.intent?.total || 0, visible: tierScores.purchase_intent?.visible || tierScores.intent?.visible || 0 },
+        { tier: "competitor", label: "Competitor Battles", score: tierScores.competitor?.score || 0, total: tierScores.competitor?.total || 0, visible: tierScores.competitor?.visible || 0 },
       ];
 
       const topGaps = [

@@ -134,12 +134,6 @@ export default function LandingHero() {
             >
               Get Demo <span aria-hidden="true">&rarr;</span>
             </Link>
-            <Link
-              href="/login"
-              className="hidden md:flex text-[13px] font-bold items-center gap-2 px-5 py-2.5 text-[#1A1A2E]/70 hover:text-[#1A1A2E] transition-colors"
-            >
-              Login
-            </Link>
             {/* Mobile menu button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -206,21 +200,22 @@ export default function LandingHero() {
 
         {/* Main headline */}
         <div className="relative text-center max-w-[900px]">
-          <SplitText
-            text="PRODUCTS DON'T GET SEARCHED ANYMORE."
+          <motion.h1
             className="text-[clamp(36px,7vw,86px)] leading-[0.95] tracking-[-0.02em] uppercase font-normal"
-            scatter={false}
-            staggerDelay={0.012}
-            as="h1"
-          />
-          <SplitText
-            text="THEY GET RECOMMENDED."
+            initial={{ opacity: 0, y: 30 }}
+            animate={mounted ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
+            PRODUCTS DON&apos;T GET SEARCHED ANYMORE.
+          </motion.h1>
+          <motion.h1
             className="text-[clamp(36px,7vw,86px)] leading-[0.95] tracking-[-0.02em] uppercase font-normal mt-2"
-            scatter={false}
-            delay={0.4}
-            staggerDelay={0.012}
-            as="h1"
-          />
+            initial={{ opacity: 0, y: 30 }}
+            animate={mounted ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.6, delay: 0.5 }}
+          >
+            THEY GET RECOMMENDED.
+          </motion.h1>
         </div>
 
         {/* Sub + CTA */}

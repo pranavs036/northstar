@@ -109,8 +109,8 @@ export async function POST(request: NextRequest) {
 
   // Calculate tier scores (same logic as brand-scan/start)
   const tiers: Array<
-    "awareness" | "category" | "intent" | "competitor" | "thought_leadership"
-  > = ["awareness", "category", "intent", "competitor", "thought_leadership"];
+    "hero_sku" | "category" | "purchase_intent" | "competitor"
+  > = ["hero_sku", "category", "purchase_intent", "competitor"];
 
   const tierScores: TierScores = {} as TierScores;
   for (const tier of tiers) {
@@ -159,11 +159,10 @@ export async function POST(request: NextRequest) {
 
   // Overall weighted score
   const weights = {
-    awareness: 0.15,
-    category: 0.3,
-    intent: 0.25,
-    competitor: 0.15,
-    thought_leadership: 0.15,
+    hero_sku: 0.25,
+    category: 0.25,
+    purchase_intent: 0.25,
+    competitor: 0.25,
   };
 
   let visibilityScore = 0;

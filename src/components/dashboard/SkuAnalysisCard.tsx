@@ -38,9 +38,10 @@ interface AuditStatusResponse {
 
 interface SkuAnalysisCardProps {
   totalSkus: number;
+  linkTo?: string;
 }
 
-export function SkuAnalysisCard({ totalSkus }: SkuAnalysisCardProps) {
+export function SkuAnalysisCard({ totalSkus, linkTo = "/catalog/analysis" }: SkuAnalysisCardProps) {
   const [auditStatus, setAuditStatus] = useState<AuditStatusResponse | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [isStarting, setIsStarting] = useState(false);
@@ -291,10 +292,10 @@ export function SkuAnalysisCard({ totalSkus }: SkuAnalysisCardProps) {
             {isStarting ? "Starting..." : "Run Audit"}
           </button>
           <Link
-            href="/catalog"
+            href={linkTo}
             className="text-xs text-text-tertiary hover:text-text-secondary"
           >
-            View Catalog
+            View Analysis
           </Link>
         </div>
       </div>

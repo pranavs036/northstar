@@ -163,6 +163,9 @@ export function SkuTable({ skus }: SkuTableProps) {
                   <th className="px-6 py-4 text-left text-xs font-semibold text-text-tertiary">
                     <SortHeader label="Severity" sortKey="worstSeverity" />
                   </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-text-tertiary">
+                    Fixes
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -197,6 +200,15 @@ export function SkuTable({ skus }: SkuTableProps) {
                     </td>
                     <td className="px-6 py-4">
                       {getSeverityBadge(sku.worstSeverity)}
+                    </td>
+                    <td className="px-6 py-4">
+                      {sku.actionablesCount > 0 ? (
+                        <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full bg-accent-primary/15 text-accent-primary border border-accent-primary/30">
+                          {sku.actionablesCount} fixes
+                        </span>
+                      ) : (
+                        <span className="text-text-tertiary text-sm">--</span>
+                      )}
                     </td>
                   </tr>
                 ))}

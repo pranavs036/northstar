@@ -9,7 +9,7 @@ interface BrandInput {
 
 export interface BrandQuery {
   query: string;
-  tier: "awareness" | "category" | "intent" | "competitor" | "thought_leadership";
+  tier: "hero_sku" | "category" | "purchase_intent" | "competitor";
   intent: string;
 }
 
@@ -22,37 +22,37 @@ export async function generateBrandQueries(brand: BrandInput): Promise<BrandQuer
     messages: [
       {
         role: "user",
-        content: `You are generating search queries that REAL CUSTOMERS would type into ChatGPT, Perplexity, or Google AI when looking for products. These must sound natural — not like SEO keywords or marketing copy.
+        content: `You are generating search queries that REAL CUSTOMERS would type into ChatGPT, Perplexity, or Google AI when shopping for products. These must sound natural and conversational — like how a real person in India would ask an AI assistant for product recommendations.
 
 Brand: ${brand.brandName} (${brand.domain})
 Description: ${brand.brandDescription}
 Categories they sell: ${brand.categories.join(", ")}
 
-Generate 20 queries organized as follows. IMPORTANT: Make queries specific to what this brand actually sells. Use real price ranges, real product types, and real locations.
+Generate exactly 20 queries (5 per tier) organized as follows. CRITICAL: Use REAL price points in INR (e.g. "under 1000", "under 2000", "under 5000"), REAL product subcategories, and India-specific phrasing.
 
-1. **awareness** (4 queries): Brand recognition + trust.
-   - 2 queries WITH brand name: "is [brand] legit", "[brand] reviews India"
-   - 2 queries about their domain/niche WITHOUT brand name: "best sites to buy [their actual product type]"
+1. **hero_sku** (5 queries): Queries about the brand's TOP SELLING product types.
+   - These are specific product searches where the brand likely dominates
+   - Use real price ranges in INR: "best earbuds under 2000", "wireless neckband for gym under 1000"
+   - Mix with and without brand name (3 without, 2 with brand name)
+   - Think about what this brand's best-selling products actually are
 
-2. **category** (5 queries): Category discovery with geo. Someone browsing, not searching for a specific product.
-   - Use the brand's ACTUAL categories (${brand.categories.join(", ")})
-   - Include location (India, Delhi, Mumbai etc.)
-   - Example: "second hand furniture online Delhi" NOT "best place to buy general products online India"
+2. **category** (5 queries): General category browsing — someone exploring options, not a specific product.
+   - Use the brand's ACTUAL categories: ${brand.categories.join(", ")}
+   - Include "India", "2024", "2025" for freshness signals
+   - Examples: "best bluetooth speakers India 2025", "TWS earbuds comparison"
+   - NO brand name in these queries
 
-3. **intent** (5 queries): Real-life situations that lead to purchases in their categories.
-   - Think: "setting up a home office on budget", "my kid needs a study table"
-   - Budget-conscious framing (common for their market)
-   - NO brand name in these
+3. **purchase_intent** (5 queries): High-intent buying queries — someone ready to purchase.
+   - Budget-conscious, feature-specific queries: "earbuds with good bass under 1500", "which headphones for daily commute"
+   - Use-case driven: "best earphones for online classes", "portable speaker for house party"
+   - NO brand name — these are category queries where the brand SHOULD appear
 
-4. **competitor** (3 queries): Brand vs competitors + alternatives.
-   - Use brand name here
-   - Compare to well-known competitors in their space
+4. **competitor** (5 queries): Direct brand comparisons and "vs" queries.
+   - Use brand name here: "${brand.brandName} vs [competitor]", "is ${brand.brandName} better than [competitor]"
+   - Compare to REAL well-known competitors in their space
+   - Include "which should I buy", "comparison", "better value"
 
-5. **thought_leadership** (3 queries): Industry/market queries.
-   - NO brand name
-   - Trends in their specific vertical, not generic "sustainable shopping"
-
-Return ONLY a JSON array: [{"query": "...", "tier": "...", "intent": "..."}]`,
+Return ONLY a JSON array: [{"query": "...", "tier": "hero_sku|category|purchase_intent|competitor", "intent": "brief description"}]`,
       },
     ],
   });
@@ -96,50 +96,39 @@ Return ONLY a JSON array: [{"query": "...", "tier": "...", "intent": "..."}]`,
  * Uses actual brand data to generate useful queries — not generic garbage.
  */
 export function generateFallbackBrandQueries(brand: BrandInput): BrandQuery[] {
-  const { brandName, domain, categories } = brand;
+  const { brandName, categories } = brand;
 
-  // Build category-specific queries instead of "general products"
   const cat1 = categories[0] || "products";
   const cat2 = categories[1] || cat1;
   const cat3 = categories[2] || cat2;
 
-  // Detect if it's a refurbished/used goods marketplace
-  const desc = (brand.brandDescription || "").toLowerCase();
-  const isRefurbished = desc.includes("refurbish") || desc.includes("second hand") ||
-    desc.includes("pre-owned") || desc.includes("used") || domain.includes("giveasy");
-
-  const prefix = isRefurbished ? "second hand" : "buy";
-  const modifier = isRefurbished ? "used" : "best";
-
   return [
-    // Awareness — 2 with brand name, 2 without
-    { query: `is ${brandName} safe to buy from`, tier: "awareness", intent: "Brand trust check" },
-    { query: `${brandName} reviews India`, tier: "awareness", intent: "Social proof search" },
-    { query: `${modifier} ${cat1} online India with warranty`, tier: "awareness", intent: "Category + trust discovery" },
-    { query: `reliable websites to buy ${prefix} ${cat2} India`, tier: "awareness", intent: "Platform discovery" },
+    // Hero SKU — queries about brand's top product types
+    { query: `best ${cat1} under 2000`, tier: "hero_sku", intent: "Price-anchored hero product search" },
+    { query: `${brandName} best selling ${cat1} 2025`, tier: "hero_sku", intent: "Brand hero product discovery" },
+    { query: `top rated ${cat2} under 1500 India`, tier: "hero_sku", intent: "Budget hero product search" },
+    { query: `${brandName} ${cat1} worth buying`, tier: "hero_sku", intent: "Brand product validation" },
+    { query: `best ${cat3} for gym and workout`, tier: "hero_sku", intent: "Use-case hero product" },
 
-    // Category — specific to what they sell, with geo
-    { query: `${prefix} ${cat1} online Delhi NCR`, tier: "category", intent: `Local ${cat1} search` },
-    { query: `affordable ${cat2} under 20000 India`, tier: "category", intent: `Price-anchored ${cat2} search` },
-    { query: `where to buy ${modifier} ${cat3} in India`, tier: "category", intent: `${cat3} marketplace search` },
-    { query: `${prefix} ${cat1} with good condition online`, tier: "category", intent: `Quality-focused ${cat1} search` },
-    { query: `cheap ${cat2} for home India 2026`, tier: "category", intent: `Budget ${cat2} search` },
+    // Category — general category browsing
+    { query: `best ${cat1} India 2025`, tier: "category", intent: `${cat1} category discovery` },
+    { query: `top 10 ${cat2} brands in India`, tier: "category", intent: `${cat2} brand comparison` },
+    { query: `${cat1} buying guide India`, tier: "category", intent: "Category education" },
+    { query: `affordable ${cat3} comparison 2025`, tier: "category", intent: `${cat3} category comparison` },
+    { query: `which ${cat2} are trending in India right now`, tier: "category", intent: "Trending category search" },
 
-    // Intent — real situations, no brand name
-    { query: `setting up home office on a budget India`, tier: "intent", intent: "Life event: home office setup" },
-    { query: `furnish 1BHK apartment under 50000`, tier: "intent", intent: "Life event: new apartment" },
-    { query: `my kid needs a study table where to find cheap ones`, tier: "intent", intent: "Parenting need" },
-    { query: `good quality ${cat1} without paying full price`, tier: "intent", intent: "Value-seeking intent" },
-    { query: `moving to new city need ${cat2} quickly`, tier: "intent", intent: "Urgency-driven purchase" },
+    // Purchase Intent — ready to buy queries
+    { query: `${cat1} with good bass under 1500`, tier: "purchase_intent", intent: "Feature-specific purchase" },
+    { query: `which ${cat2} to buy for daily commute`, tier: "purchase_intent", intent: "Use-case purchase intent" },
+    { query: `best ${cat1} for online classes and meetings`, tier: "purchase_intent", intent: "WFH purchase intent" },
+    { query: `long battery life ${cat2} under 3000`, tier: "purchase_intent", intent: "Spec-driven purchase" },
+    { query: `durable ${cat3} for outdoor use India`, tier: "purchase_intent", intent: "Durability-focused purchase" },
 
-    // Competitor — with brand name
-    { query: `${brandName} vs OLX which is better`, tier: "competitor", intent: "Direct competitor comparison" },
-    { query: `${brandName} vs Cashify for ${cat1}`, tier: "competitor", intent: "Category-specific competitor" },
-    { query: `alternatives to OLX for buying ${cat2}`, tier: "competitor", intent: "Competitor alternative" },
-
-    // Thought Leadership — industry specific, no brand name
-    { query: `${isRefurbished ? "refurbished" : cat1} market India 2026`, tier: "thought_leadership", intent: "Industry trend" },
-    { query: `why buy ${isRefurbished ? "refurbished" : "pre-owned"} instead of new`, tier: "thought_leadership", intent: "Category education" },
-    { query: `${isRefurbished ? "circular economy" : cat1 + " industry"} trends India`, tier: "thought_leadership", intent: "Market insight" },
+    // Competitor — brand vs brand
+    { query: `${brandName} vs JBL which is better`, tier: "competitor", intent: "Direct competitor comparison" },
+    { query: `${brandName} vs Noise comparison 2025`, tier: "competitor", intent: "Competitor comparison" },
+    { query: `is ${brandName} better than Sony for ${cat1}`, tier: "competitor", intent: "Premium competitor comparison" },
+    { query: `${brandName} vs Samsung ${cat2} value for money`, tier: "competitor", intent: "Value comparison" },
+    { query: `alternatives to ${brandName} in India`, tier: "competitor", intent: "Alternative search" },
   ];
 }

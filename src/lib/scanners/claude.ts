@@ -137,11 +137,11 @@ export async function scanClaude(input: ScanInput): Promise<ScanOutput> {
 
     const response = await claude.messages.create({
       model: "claude-sonnet-4-20250514",
-      max_tokens: 512,
+      max_tokens: 1024,
       messages: [
         {
           role: "user",
-          content: input.query,
+          content: `${input.query}\n\nPlease recommend specific brands and products with brief explanations. Include price ranges where relevant.`,
         },
       ],
     });
